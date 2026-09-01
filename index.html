@@ -2011,39 +2011,39 @@ async function loginEmsInlineIfNeeded() {
 
 async function submitReturnData() {
 
-  if (
-    S.officialRunning
-  ) {
+  if (S.officialRunning) {
     return;
   }
 
-  if (
-    !S.tabletClosed
-  ) {
+  if (!S.tabletClosed) {
     alert(
       "請先勾選「我已確認救護平板完成結案」"
     );
     return;
   }
 
-  S.officialRunning =
-    true;
-
+  S.officialRunning = true;
   refreshNav();
   scrollToFinalProgress();
 
   try {
 
-    // V4.8：
-    // 先把 EMS 驗證碼與 token 留在本次送出流程中。
-    // 最後 EMS 站會用「單一 server call」完成登入 + 寫入，
-    // 不再先登入一次、之後另一個 call 再拿 Session。
+    const completed = {
+      duty:
+        S.stationTest.duty ===
+        "success",
+      ppe:
+        S.stationTest.ppe ===
+        "success",
+      ems:
+        S.stationTest.ems ===
+        "success"
+    };
+
     let emsTokenForSubmit = "";
     let emsCodeForSubmit = "";
 
-    if (
-      S.stationTest.ems !== "success"
-    ) {
+    if (!completed.ems) {
 
       if (
         !S.emsCaptchaToken ||
@@ -2078,161 +2078,164 @@ async function submitReturnData() {
         S.emsCaptchaToken;
     }
 
-    const flow = [
-      {
-        key:
-          "duty",
-        api:
-          "appSubmitDutyStation"
-      },
-      {
-        key:
-          "ppe",
-        api:
-          "appSubmitPPEStation"
-      },
-      {
-        key:
-          "ems",
-        api:
-          "appSubmitEMSStation"
+    // 先把尚未完成的站別標成執行中。
+    ["duty","ppe","ems"].forEach(
+      function(key) {
+        if (!completed[key]) {
+          S.stationTest[key] =
+            "running";
+          S.stationMessage[key] =
+            "";
+        }
       }
-    ];
+    );
 
-    for (
-      const station of flow
+    renderFinalProgress();
+    scrollToFinalProgress();
+
+    // 加速核心：
+    // GitHub → Worker → Apps Script 只呼叫一次。
+    const batch =
+      await gs(
+        "appSubmitReturnDataFast",
+        currentWorkflowData(),
+        emsTokenForSubmit,
+        emsCodeForSubmit,
+        completed
+      );
+
+    const stations =
+      batch && batch.stations
+        ? batch.stations
+        : {};
+
+    ["duty","ppe","ems"].forEach(
+      function(key) {
+
+        const item =
+          stations[key];
+
+        if (
+          item &&
+          item.success === true
+        ) {
+          S.stationTest[key] =
+            "success";
+
+          S.stationMessage[key] =
+            item.message ||
+            "完成";
+        }
+      }
+    );
+
+    const ppeResult =
+      stations.ppe;
+
+    if (
+      ppeResult &&
+      ppeResult.verifiedMileage !==
+        undefined
+    ) {
+      const car = getCar();
+
+      if (car) {
+        car.mileage =
+          Number(
+            ppeResult.verifiedMileage
+          );
+      }
+    }
+
+    const emsResult =
+      stations.ems;
+
+    if (
+      emsResult &&
+      emsResult.emsAuthSessionId
+    ) {
+      S.emsAuthSessionId =
+        emsResult.emsAuthSessionId;
+
+      if (S.bootstrap) {
+        S.bootstrap.emsSessionActive =
+          true;
+      }
+
+      S.emsCaptchaToken = "";
+      S.emsCaptchaImage = "";
+    }
+
+    // 批次內若有站別失敗，前面成功站已經被記住。
+    if (
+      !batch ||
+      batch.success !== true
     ) {
 
+      const failed =
+        batch &&
+        batch.failedStation
+          ? batch.failedStation
+          : "";
+
       if (
-        S.stationTest[
-          station.key
-        ] === "success"
+        failed &&
+        S.stationTest[failed] !==
+          "success"
       ) {
-        continue;
+        S.stationTest[failed] =
+          "error";
+
+        S.stationMessage[failed] =
+          batch.error ||
+          "執行失敗";
       }
 
-      S.stationTest[
-        station.key
-      ] =
-        "running";
+      // 尚未實際執行到的後續站別恢復 pending。
+      ["duty","ppe","ems"].forEach(
+        function(key) {
+          if (
+            S.stationTest[key] ===
+            "running"
+          ) {
+            S.stationTest[key] =
+              "pending";
+          }
+        }
+      );
 
-      S.stationMessage[
-        station.key
-      ] =
-        "";
+      if (failed === "ems") {
+
+        if (S.bootstrap) {
+          S.bootstrap.emsSessionActive =
+            false;
+        }
+
+        S.emsCaptchaToken = "";
+        S.emsCaptchaImage = "";
+        S.emsAuthSessionId = "";
+
+        renderFinalEmsBox();
+
+        setTimeout(
+          function() {
+            ensureFinalEmsCaptcha();
+          },
+          50
+        );
+      }
 
       renderFinalProgress();
       scrollToFinalProgress();
 
-      try {
-
-        const result =
-          station.key === "ems"
-            ? await gs(
-                "appLoginAndSubmitEMSStation",
-                currentWorkflowData(),
-                emsTokenForSubmit,
-                emsCodeForSubmit
-              )
-            : await gs(
-                station.api,
-                currentWorkflowData()
-              );
-
-        if (
-          station.key === "ems" &&
-          result.emsAuthSessionId
-        ) {
-          S.emsAuthSessionId =
-            result.emsAuthSessionId;
-
-          if (S.bootstrap) {
-            S.bootstrap.emsSessionActive =
-              true;
-          }
-
-          S.emsCaptchaToken = "";
-          S.emsCaptchaImage = "";
-        }
-
-        S.stationTest[
-          station.key
-        ] =
-          "success";
-
-        S.stationMessage[
-          station.key
-        ] =
-          result.message ||
-          "完成";
-
-        if (
-          station.key === "ppe" &&
-          result.verifiedMileage !== undefined
-        ) {
-          const car =
-            getCar();
-
-          if (car) {
-            car.mileage =
-              Number(
-                result.verifiedMileage
-              );
-          }
-        }
-
-        renderFinalProgress();
-        scrollToFinalProgress();
-
-      } catch (e) {
-
-        S.stationTest[
-          station.key
-        ] =
-          "error";
-
-        S.stationMessage[
-          station.key
-        ] =
-          e.message ||
-          String(e);
-
-        // EMS 若因 Session 過期 / 無效而失敗，
-        // 立刻把前端標記改回未驗證，並重新準備驗證碼。
-        // 下一次按「填寫返隊資料」時，已成功的勤務/車輛站會自動跳過，
-        // 只續跑 EMS，不會重複寫前兩站。
-        if (
-          station.key === "ems"
-        ) {
-          if (S.bootstrap) {
-            S.bootstrap.emsSessionActive = false;
-          }
-
-          S.emsCaptchaToken = "";
-          S.emsCaptchaImage = "";
-          S.emsAuthSessionId = "";
-
-          renderFinalEmsBox();
-
-          setTimeout(
-            function() {
-              ensureFinalEmsCaptcha();
-            },
-            50
-          );
-        }
-
-        renderFinalProgress();
-        scrollToFinalProgress();
-
-        throw e;
-      }
-
+      throw new Error(
+        batch && batch.error
+          ? batch.error
+          : "返隊資料填寫失敗"
+      );
     }
 
-    S.officialDone =
-      true;
-
+    S.officialDone = true;
     renderFinalProgress();
     refreshNav();
 
@@ -2265,15 +2268,10 @@ async function submitReturnData() {
 
   } finally {
 
-    S.officialRunning =
-      false;
-
+    S.officialRunning = false;
     refreshNav();
-
   }
-
 }
-
 
 
 function restartReturnWorkflow() {
