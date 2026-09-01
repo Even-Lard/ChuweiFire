@@ -1044,7 +1044,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V4.8.1-GH-BRIDGE2";
+const FRONTEND_BUILD = "V4.8.1-GH-WORKER1";
 
 const S = {
   step: 1,
@@ -1086,150 +1086,110 @@ const S = {
 };
 
 // =====================================================
-// GitHub Pages → Apps Script Bridge
+// GitHub Pages → Cloudflare Worker → Apps Script
 // =====================================================
-// 部署後，把這裡改成你目前 Apps Script Web App 的 /exec 網址。
-// 正式前端不會直接顯示 Apps Script 頁面；它只在背景用隱藏 iframe 溝通。
-const GAS_WEB_APP_URL =
-  "https://script.google.com/macros/s/AKfycbyrpA-i8XkiLHsCMpPVEw0BCOk_OPMvgvFOuz3Pudr_hnYVaOwbaBthFOMjnbg9PF3v/exec";
-
-let bridgeReady = false;
-let bridgeSeq = 0;
-const bridgePending = new Map();
-
-function isTrustedGasBridgeEvent(event) {
-  const frame = document.getElementById("gasBridge");
-
-  if (
-    !frame ||
-    !frame.contentWindow ||
-    event.source !== frame.contentWindow
-  ) {
-    return false;
-  }
-
-  try {
-    const host = new URL(event.origin).hostname;
-    return (
-      host === "script.google.com" ||
-      host === "script.googleusercontent.com" ||
-      host.endsWith(".script.googleusercontent.com")
-    );
-  } catch (e) {
-    return false;
-  }
-}
-
-function initGasBridge() {
-  if (
-    !GAS_WEB_APP_URL ||
-    GAS_WEB_APP_URL.indexOf("PASTE_YOUR_") === 0
-  ) {
-    return;
-  }
-
-  const frame = document.createElement("iframe");
-  frame.id = "gasBridge";
-  frame.src =
-    GAS_WEB_APP_URL +
-    (GAS_WEB_APP_URL.includes("?") ? "&" : "?") +
-    "page=bridge";
-  frame.style.display = "none";
-  frame.setAttribute("aria-hidden", "true");
-  document.body.appendChild(frame);
-}
-
-window.addEventListener("message", function(event) {
-  if (!isTrustedGasBridgeEvent(event)) {
-    return;
-  }
-
-  const msg = event.data || {};
-
-  if (msg.type === "ZW_RETURN_BRIDGE_READY") {
-    bridgeReady = true;
-    return;
-  }
-
-  if (msg.type !== "ZW_RETURN_RESULT" || !msg.id) {
-    return;
-  }
-
-  const pending = bridgePending.get(msg.id);
-  if (!pending) return;
-
-  bridgePending.delete(msg.id);
-  clearTimeout(pending.timer);
-
-  if (msg.ok) {
-    pending.resolve(msg.result);
-  } else {
-    pending.reject(new Error(msg.error || "Apps Script 執行失敗"));
-  }
-});
-
-function waitForBridge(timeoutMs = 15000) {
-  return new Promise((resolve, reject) => {
-    const started = Date.now();
-
-    const check = () => {
-      if (bridgeReady) {
-        resolve();
-        return;
-      }
-
-      if (Date.now() - started > timeoutMs) {
-        reject(
-          new Error(
-            "後端連線逾時。請確認 GitHub 設定的 Apps Script 網址與 Bridge 允許來源。"
-          )
-        );
-        return;
-      }
-
-      setTimeout(check, 80);
-    };
-
-    check();
-  });
-}
+// Cloudflare Worker 部署完成後，把下面網址改成你的 workers.dev 網址。
+// 例：https://chuwei-return-api.even-lard.workers.dev
+const RETURN_API_URL =
+  "https://nameless-cake-eaa3.a61016123.workers.dev";
 
 async function gs(name, ...args) {
-  await waitForBridge();
 
-  const frame = document.getElementById("gasBridge");
-  if (!frame || !frame.contentWindow) {
-    throw new Error("找不到 Apps Script Bridge");
+  if (
+    !RETURN_API_URL ||
+    RETURN_API_URL.indexOf(
+      "PASTE_YOUR_"
+    ) === 0
+  ) {
+    throw new Error(
+      "尚未設定 Cloudflare Worker 網址"
+    );
   }
 
-  const id =
-    "zw_" +
-    Date.now() +
-    "_" +
-    (++bridgeSeq);
+  const controller =
+    new AbortController();
 
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      bridgePending.delete(id);
-      reject(new Error("後端執行逾時，請稍後再試"));
-    }, 90000);
-
-    bridgePending.set(id, {
-      resolve,
-      reject,
-      timer
-    });
-
-    frame.contentWindow.postMessage(
-      {
-        type: "ZW_RETURN_CALL",
-        id,
-        method: name,
-        args
+  const timer =
+    setTimeout(
+      function() {
+        controller.abort();
       },
-      "*"
+      90000
     );
-  });
+
+  try {
+
+    const response =
+      await fetch(
+        RETURN_API_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              method: name,
+              args: args
+            }),
+
+          signal:
+            controller.signal
+        }
+      );
+
+    const text =
+      await response.text();
+
+    let payload;
+
+    try {
+      payload =
+        JSON.parse(text);
+    } catch (e) {
+      throw new Error(
+        "後端回傳不是 JSON：" +
+        text.slice(0, 200)
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        payload.error ||
+        ("HTTP " + response.status)
+      );
+    }
+
+    if (!payload.ok) {
+      throw new Error(
+        payload.error ||
+        "Apps Script 執行失敗"
+      );
+    }
+
+    return payload.result;
+
+  } catch (err) {
+
+    if (
+      err &&
+      err.name ===
+        "AbortError"
+    ) {
+      throw new Error(
+        "後端執行逾時"
+      );
+    }
+
+    throw err;
+
+  } finally {
+    clearTimeout(timer);
+  }
+
 }
 
 function esc(v) {
@@ -3057,7 +3017,6 @@ async function start() {
   }
 }
 
-initGasBridge();
 start();
 </script>
 
