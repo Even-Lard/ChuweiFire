@@ -1044,7 +1044,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V4.8.1";
+const FRONTEND_BUILD = "V4.8.1-GH-BRIDGE2";
 
 const S = {
   step: 1,
@@ -1097,11 +1097,30 @@ let bridgeReady = false;
 let bridgeSeq = 0;
 const bridgePending = new Map();
 
-function getBridgeOrigin() {
+function isTrustedGasBridgeEvent(event) {
+  const frame = document.getElementById("gasBridge");
+
+  // 最重要的驗證：訊息必須真的來自我們自己建立的 Bridge iframe。
+  if (
+    !frame ||
+    !frame.contentWindow ||
+    event.source !== frame.contentWindow
+  ) {
+    return false;
+  }
+
+  // Apps Script /exec 會從 script.google.com 轉到
+  // script.googleusercontent.com 執行，所以不能只鎖死 script.google.com。
   try {
-    return new URL(GAS_WEB_APP_URL).origin;
+    const host = new URL(event.origin).hostname;
+
+    return (
+      host === "script.google.com" ||
+      host === "script.googleusercontent.com" ||
+      host.endsWith(".script.googleusercontent.com")
+    );
   } catch (e) {
-    return "";
+    return false;
   }
 }
 
@@ -1125,9 +1144,7 @@ function initGasBridge() {
 }
 
 window.addEventListener("message", function(event) {
-  const expectedOrigin = getBridgeOrigin();
-
-  if (!expectedOrigin || event.origin !== expectedOrigin) {
+  if (!isTrustedGasBridgeEvent(event)) {
     return;
   }
 
@@ -1207,6 +1224,16 @@ async function gs(name, ...args) {
       timer
     });
 
+    // Apps Script Web App 載入後會被 Google 轉址到
+    // script.googleusercontent.com；因此這裡不能把 targetOrigin
+    // 鎖死在原始 script.google.com。
+    //
+    // 安全性仍由：
+    // 1. event.source 必須是我們自己的 Bridge iframe
+    // 2. 回傳來源必須是 Google Apps Script 網域
+    // 3. Bridge.html 只接受 even-lard.github.io
+    // 4. Bridge 白名單限制可呼叫的方法
+    // 共同保護。
     frame.contentWindow.postMessage(
       {
         type: "ZW_RETURN_CALL",
@@ -1214,7 +1241,7 @@ async function gs(name, ...args) {
         method: name,
         args
       },
-      getBridgeOrigin()
+      "*"
     );
   });
 }
