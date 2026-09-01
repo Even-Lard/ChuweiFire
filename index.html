@@ -274,7 +274,9 @@
 .fatcatImg {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   visibility: hidden;
   filter: drop-shadow(0 8px 3px rgba(0,0,0,.08));
   transform-origin: center;
@@ -884,7 +886,7 @@ button.secondary::before {
       <div class="fatcatSpeed s2"></div>
       <div class="fatcatSpeed s3"></div>
       <div class="fatcatBounce">
-        <img class="fatcatImg" id="randomCatImg" src="" alt="隨機值勤胖貓">
+        <div class="fatcatImg" id="randomCatImg" aria-hidden="true"></div>
       </div>
     </div>
   </div>
@@ -1020,18 +1022,22 @@ function initRandomLoadingCat() {
 
   if (img) {
     img.style.visibility = "hidden";
-    img.removeAttribute("src");
-    img.alt = "";
+    img.style.backgroundImage = "none";
 
-    img.onload = function() {
+    const preloader = new Image();
+
+    preloader.onload = function() {
+      img.style.backgroundImage =
+        'url("' + cat.image + '")';
       img.style.visibility = "visible";
     };
 
-    img.onerror = function() {
+    preloader.onerror = function() {
+      img.style.backgroundImage = "none";
       img.style.visibility = "hidden";
     };
 
-    img.src = cat.image;
+    preloader.src = cat.image;
   }
 
   if (badge) {
