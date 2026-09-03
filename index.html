@@ -868,7 +868,7 @@ button.secondary::before {
 <div class="wrap">
   <div class="head">
     <h1>🚑 返隊登打</h1>
-    <p id="syncText">正在一次讀取案件、車輛與駕駛資料…</p>
+    <p id="syncText">正在讀取最新案件…車輛資料會在背景準備</p>
   </div>
 
   <div class="steps">
@@ -1063,7 +1063,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V4.8.1";
+const FRONTEND_BUILD = "V4.8.2";
 
 const S = {
   step: 1,
@@ -1101,7 +1101,10 @@ const S = {
   emsAuthSessionId: "",
 
   officialRunning: false,
-  officialDone: false
+  officialDone: false,
+
+  ppeLoading: false,
+  ppeError: ""
 };
 
 // =====================================================
@@ -1128,12 +1131,21 @@ async function gs(name, ...args) {
   const controller =
     new AbortController();
 
+  const timeoutMs =
+    name === "appGetReturnSubmitStatus"
+      ? 15000
+      : (
+          name === "appSubmitReturnDataFast"
+            ? 150000
+            : 70000
+        );
+
   const timer =
     setTimeout(
       function() {
         controller.abort();
       },
-      90000
+      timeoutMs
     );
 
   try {
@@ -1306,7 +1318,15 @@ function selectCar(plate) {
 }
 
 function getCar() {
-  return S.bootstrap.cars.find(x => x.plate === S.carPlate) || null;
+  const cars =
+    S.bootstrap &&
+    Array.isArray(S.bootstrap.cars)
+      ? S.bootstrap.cars
+      : [];
+
+  return cars.find(
+    x => x.plate === S.carPlate
+  ) || null;
 }
 
 
@@ -1538,6 +1558,35 @@ function render() {
   }
 
   if (S.step === 3) {
+
+    if (
+      !S.bootstrap.ppeReady
+    ) {
+      app.innerHTML = `
+        <div class="card">
+          <h2>③ 車輛資料</h2>
+          ${
+            S.ppeError
+              ? `
+                <div class="warn">
+                  車輛資料暫時讀取失敗：${esc(S.ppeError)}
+                </div>
+                <button class="primary"
+                  onclick="retryPPEBootstrap()">
+                  重新讀取車輛資料
+                </button>
+              `
+              : `
+                <div class="okBox">
+                  🐱 車輛里程與駕駛名單正在背景準備中…
+                </div>
+              `
+          }
+        </div>
+      `;
+      return;
+    }
+
     const car = getCar();
     const c = S.candidate;
     const autoDest =
@@ -2112,16 +2161,38 @@ async function submitReturnData() {
     renderFinalProgress();
     scrollToFinalProgress();
 
-    // 加速核心：
-    // GitHub → Worker → Apps Script 只呼叫一次。
-    const batch =
-      await gs(
-        "appSubmitReturnDataFast",
-        currentWorkflowData(),
-        emsTokenForSubmit,
-        emsCodeForSubmit,
-        completed
-      );
+    const requestId =
+      makeReturnRequestId();
+
+    let batch;
+
+    try {
+
+      batch =
+        await gs(
+          "appSubmitReturnDataFast",
+          currentWorkflowData(),
+          emsTokenForSubmit,
+          emsCodeForSubmit,
+          completed,
+          requestId
+        );
+
+    } catch (transportErr) {
+
+      batch =
+        await recoverReturnSubmit(
+          requestId
+        );
+
+      if (!batch) {
+        throw new Error(
+          "後端回傳中斷，目前無法確認最後結果。\n" +
+          "請先不要再次送出，稍後查看 EMS / 勤務紀錄後再操作。\n\n" +
+          (transportErr.message || String(transportErr))
+        );
+      }
+    }
 
     const stations =
       batch && batch.stations
@@ -2919,6 +2990,181 @@ async function buildPreview() {
 }
 
 
+async function loadPPEInBackground(
+  promise
+) {
+
+  if (!S.bootstrap) {
+    return;
+  }
+
+  S.ppeLoading = true;
+  S.ppeError = "";
+
+  try {
+
+    const ppe =
+      promise
+        ? await promise
+        : await gs(
+            "appBootstrapPPE"
+          );
+
+    if (
+      !ppe ||
+      ppe.serverBuild !==
+        FRONTEND_BUILD
+    ) {
+      throw new Error(
+        "PPE 背景資料版本不一致"
+      );
+    }
+
+    S.bootstrap.cars =
+      Array.isArray(ppe.cars)
+        ? ppe.cars
+        : [];
+
+    S.bootstrap.drivers =
+      Array.isArray(ppe.drivers)
+        ? ppe.drivers
+        : [];
+
+    S.bootstrap.ppeReady =
+      true;
+
+    S.drivers =
+      S.bootstrap.drivers;
+
+    S.ppeError = "";
+
+    if (S.step === 3) {
+      render();
+      refreshNav();
+    }
+
+  } catch (err) {
+
+    S.bootstrap.ppeReady =
+      false;
+
+    S.ppeError =
+      err && err.message
+        ? err.message
+        : String(err);
+
+    if (S.step === 3) {
+      render();
+      refreshNav();
+    }
+
+  } finally {
+    S.ppeLoading = false;
+  }
+}
+
+
+async function retryPPEBootstrap() {
+
+  if (S.ppeLoading) {
+    return;
+  }
+
+  S.ppeError = "";
+  render();
+
+  await loadPPEInBackground();
+}
+
+
+function makeReturnRequestId() {
+
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID ===
+      "function"
+  ) {
+    return (
+      "r_" +
+      window.crypto.randomUUID()
+        .replace(/-/g, "")
+    );
+  }
+
+  return (
+    "r_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2)
+  );
+}
+
+
+function sleepMs(ms) {
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+}
+
+
+async function recoverReturnSubmit(
+  requestId
+) {
+
+  let lastResult = null;
+
+  for (
+    let i = 0;
+    i < 8;
+    i++
+  ) {
+
+    await sleepMs(
+      i === 0
+        ? 350
+        : 1500
+    );
+
+    try {
+
+      const status =
+        await gs(
+          "appGetReturnSubmitStatus",
+          requestId
+        );
+
+      if (
+        status &&
+        status.found &&
+        status.result
+      ) {
+
+        lastResult =
+          status.result;
+
+        if (
+          status.phase ===
+            "success" ||
+          status.phase ===
+            "failed"
+        ) {
+          return lastResult;
+        }
+      }
+
+    } catch (err) {}
+  }
+
+  return lastResult;
+}
+
+
 let bootstrapWatchdog = null;
 
 function armBootstrapWatchdog() {
@@ -2945,7 +3191,7 @@ function armBootstrapWatchdog() {
           app.innerHTML = `
             <div class="card">
               <div class="warn">
-                資料讀取時間較久，可能是外部系統暫時沒有回應。
+                案件讀取時間較久，勤務系統可能暫時沒有回應。
               </div>
 
               <button class="primary"
@@ -2973,10 +3219,20 @@ let isFirstPageBootstrap = true;
 
 async function start() {
   try {
-    S.bootstrap = await gs("appBootstrap");
 
-    // V4.8：直接驗證「目前瀏覽器 HTML」與「部署中的 Code.gs」
-    // 是否真的是同一版，避免管理部署沒有更新成功卻誤以為新程式壞掉。
+    const dutyPromise =
+      gs(
+        "appBootstrapFast"
+      );
+
+    const ppePromise =
+      gs(
+        "appBootstrapPPE"
+      );
+
+    S.bootstrap =
+      await dutyPromise;
+
     if (
       !S.bootstrap.serverBuild ||
       S.bootstrap.serverBuild !== FRONTEND_BUILD
@@ -2990,12 +3246,6 @@ async function start() {
       );
     }
 
-    // 真正重新開啟 / 重新整理網頁時：
-    // 即使 Apps Script UserCache 裡還留著舊 EMS Cookie，
-    // 這一頁也一律要求重新輸入一次驗證碼。
-    //
-    // 但同一頁按「再次填寫」時 isFirstPageBootstrap 已經是 false，
-    // 可以沿用剛剛成功登入的 EMS Session，避免每筆都重輸驗證碼。
     if (isFirstPageBootstrap) {
       S.bootstrap.emsSessionActive = false;
       S.emsCaptchaToken = "";
@@ -3003,24 +3253,34 @@ async function start() {
       S.emsAuthSessionId = "";
       isFirstPageBootstrap = false;
     } else if (S.emsAuthSessionId) {
-      // 同一頁按「再次填寫」時沿用剛剛成功的 EMS 登入 Session。
       S.bootstrap.emsSessionActive = true;
     }
 
     clearTimeout(
       bootstrapWatchdog
     );
-    S.drivers = S.bootstrap.drivers || [];
-    document.getElementById("syncText").textContent =
-      "資料更新：" +
+
+    S.drivers = [];
+
+    document.getElementById(
+      "syncText"
+    ).textContent =
+      "案件更新：" +
       S.bootstrap.generatedAt +
       " ｜ " +
       FRONTEND_BUILD;
+
     render();
+    refreshNav();
+
+    loadPPEInBackground(
+      ppePromise
+    );
 
     if (S.step === 4) {
       ensureFinalEmsCaptcha();
     }
+
   } catch (e) {
 
     clearTimeout(
@@ -3029,6 +3289,7 @@ async function start() {
 
     document.getElementById("app").innerHTML =
       `<div class="card"><div class="warn">載入失敗：${esc(e.message)}</div></div>`;
+
     document.getElementById("nav").innerHTML =
       `<div class="bottomInner single"><button class="primary" onclick="location.reload()">重新載入</button></div>`;
   }
