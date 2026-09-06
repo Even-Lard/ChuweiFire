@@ -939,6 +939,41 @@ button.ppe-only-submit:disabled {
 }
 </style>
 
+
+<style>
+/* V5.0.1：手機欄位不可橫向撐破畫面 */
+.grid2 > * { min-width: 0; }
+input, select { min-width: 0; max-width: 100%; box-sizing: border-box; }
+input[type="datetime-local"] { font-size: 14px; }
+
+/* PPE Only 改成三分類，不再一次攤開 12 台車 */
+.ppe-only-groups { display: grid; gap: 10px; }
+.ppe-only-group {
+  border: 1px solid #dfc89c;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+.ppe-only-group summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 13px 14px;
+  font-weight: 800;
+}
+.ppe-only-group summary::-webkit-details-marker { display:none; }
+.ppe-only-group summary::after { content:"＋"; float:right; }
+.ppe-only-group[open] summary::after { content:"－"; }
+.ppe-only-group.ambulance summary { background:#eef7ff; }
+.ppe-only-group.fire summary { background:#fff0ee; }
+.ppe-only-group.other summary { background:#f2f4f5; }
+.ppe-only-group-body { padding: 8px 10px 10px; }
+
+@media (max-width: 560px) {
+  .grid2 { grid-template-columns: 1fr; gap: 0; }
+  input[type="datetime-local"] { width: 100%; }
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1139,7 +1174,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0";
+const FRONTEND_BUILD = "V5.0.1";
 
 const S = {
   step: 1,
@@ -1457,6 +1492,7 @@ function effectiveDestination() {
 
 function updateField(key, value) {
   S[key] = value;
+  refreshNav();
 }
 
 
@@ -1750,7 +1786,7 @@ function ppeOnlyHtml() {
           onclick="openPPEOnly()">
           ${
             ready
-              ? "只登打 PPE 車輛紀錄"
+              ? "只登打車輛里程"
               : "車輛資料背景載入中…"
           }
         </button>
@@ -1785,29 +1821,69 @@ function ppeOnlyHtml() {
       <div class="ppe-only-panel">
         <label class="field">選擇車輛</label>
 
-        ${cars.map(x => `
-          <button
-            class="ppe-only-vehicle ${
-              S.ppeOnlyCarPlate ===
-              x.plate
-                ? "selected"
-                : ""
-            }"
-            onclick="selectPPEOnlyCar('${x.plate}')">
-            <div class="top">
-              ${esc(x.plate)}
-              ${
-                x.callSign
-                  ? `｜${esc(x.callSign)}`
-                  : ""
-              }
+        ${(() => {
+          const groups = [
+            {
+              key: "ambulance",
+              title: "🚑 救護車",
+              cars: cars.filter(x => x.vehicleType === "救護車")
+            },
+            {
+              key: "fire",
+              title: "🚒 消防車",
+              cars: cars.filter(x =>
+                ["水箱消防車","水庫消防車","化學消防車"]
+                  .includes(x.vehicleType)
+              )
+            },
+            {
+              key: "other",
+              title: "🚙 其他公務車",
+              cars: cars.filter(x =>
+                !["救護車","水箱消防車","水庫消防車","化學消防車"]
+                  .includes(x.vehicleType)
+              )
+            }
+          ];
+
+          const vehicleButton = x => `
+            <button
+              class="ppe-only-vehicle ${
+                S.ppeOnlyCarPlate === x.plate ? "selected" : ""
+              }"
+              onclick="selectPPEOnlyCar('${x.plate}')">
+              <div class="top">
+                ${esc(x.plate)}
+                ${x.callSign ? `｜${esc(x.callSign)}` : ""}
+              </div>
+              <div class="meta">
+                ${esc(x.vehicleType || "車輛")}
+                ｜目前里程：${x.mileage}
+              </div>
+            </button>
+          `;
+
+          return `
+            <div class="ppe-only-groups">
+              ${groups.map(g => {
+                const selectedHere =
+                  g.cars.some(x => x.plate === S.ppeOnlyCarPlate);
+                return `
+                  <details
+                    class="ppe-only-group ${g.key}"
+                    ${selectedHere ? "open" : ""}>
+                    <summary>
+                      ${g.title}（${g.cars.length}）
+                    </summary>
+                    <div class="ppe-only-group-body">
+                      ${g.cars.map(vehicleButton).join("")}
+                    </div>
+                  </details>
+                `;
+              }).join("")}
             </div>
-            <div class="meta">
-              ${esc(x.vehicleType || "車輛")}
-              ｜目前里程：${x.mileage}
-            </div>
-          </button>
-        `).join("")}
+          `;
+        })()}
 
         ${car ? `
           <div class="ppe-only-divider"></div>
@@ -1862,14 +1938,22 @@ function ppeOnlyHtml() {
               <input
                 type="datetime-local"
                 value="${esc(S.ppeOnlyStartDateTime)}"
-                onchange="S.ppeOnlyStartDateTime=this.value">
+                onchange="
+                  S.ppeOnlyStartDateTime=this.value;
+                  refreshNav();
+                  render();
+                ">
             </label>
 
             <label class="field">返隊時間
               <input
                 type="datetime-local"
                 value="${esc(S.ppeOnlyEndDateTime)}"
-                onchange="S.ppeOnlyEndDateTime=this.value">
+                onchange="
+                  S.ppeOnlyEndDateTime=this.value;
+                  refreshNav();
+                  render();
+                ">
             </label>
           </div>
 
@@ -1877,14 +1961,20 @@ function ppeOnlyHtml() {
             <input
               value="${esc(S.ppeOnlyReason)}"
               placeholder="例如：公務、送修、補給…"
-              oninput="S.ppeOnlyReason=this.value">
+              oninput="
+                S.ppeOnlyReason=this.value;
+                refreshNav();
+              ">
           </label>
 
           <label class="field">前往地點
             <input
               value="${esc(S.ppeOnlyDestination)}"
               placeholder="請輸入前往地點"
-              oninput="S.ppeOnlyDestination=this.value">
+              oninput="
+                S.ppeOnlyDestination=this.value;
+                refreshNav();
+              ">
           </label>
 
           ${
@@ -1896,6 +1986,7 @@ function ppeOnlyHtml() {
           }
 
           <button
+            id="ppeOnlySubmitButton"
             class="ppe-only-submit"
             style="margin-top:14px"
             ${
@@ -1908,7 +1999,7 @@ function ppeOnlyHtml() {
             ${
               S.ppeOnlyRunning
                 ? "PPE 寫入中…"
-                : "只寫入 PPE 車輛紀錄"
+                : "只寫入車輛里程紀錄"
             }
           </button>
         ` : ""}
@@ -1945,12 +2036,23 @@ function refreshNav() {
       "nav"
     );
 
-  if (!nav) {
-    return;
+  if (nav) {
+    nav.innerHTML =
+      navHtml();
   }
 
-  nav.innerHTML =
-    navHtml();
+  // V5.0.1：PPE-only 是首頁內嵌功能，不屬於底部「下一步」。
+  // 任一欄位改變都直接同步自己的寫入按鈕，避免填寫順序造成卡住。
+  const ppeOnlyButton =
+    document.getElementById(
+      "ppeOnlySubmitButton"
+    );
+
+  if (ppeOnlyButton) {
+    ppeOnlyButton.disabled =
+      !ppeOnlyReady() ||
+      S.ppeOnlyRunning;
+  }
 }
 
 function navHtml() {
@@ -2115,7 +2217,7 @@ function render() {
               S.driverId=this.value;
               const o=this.options[this.selectedIndex];
               S.driverName=o.dataset.name||'';
-              render();
+              refreshNav();
             ">
               <option value="">${S.drivers.length ? "請選擇駕駛" : "查無竹圍分隊駕駛"}</option>
               ${S.drivers.map(d=>`<option value="${esc(d.id)}" data-name="${esc(d.name)}" ${S.driverId===d.id?"selected":""}>${esc(d.name)}</option>`).join("")}
