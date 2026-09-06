@@ -1057,6 +1057,110 @@ input[type="datetime-local"] { font-size: 14px; }
 }
 </style>
 
+
+<style>
+/* ===== V5.0.4 PPE-only UI ===== */
+
+/* 分類標題改為真正 accordion button，一次只開一組 */
+.ppe-only-group summary { display:none !important; }
+
+.ppe-only-group-head {
+  width: 100%;
+  min-height: 58px;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ppe-only-group.ambulance .ppe-only-group-head { background:#eef7ff; }
+.ppe-only-group.fire .ppe-only-group-head { background:#fff0ee; }
+.ppe-only-group.other .ppe-only-group-head { background:#f2f4f5; }
+
+.ppe-only-group-symbol {
+  flex: 0 0 auto;
+  font-size: 19px;
+}
+
+/* 已選車固定摘要 */
+.ppe-only-selected-summary {
+  margin-top: 14px;
+  padding: 13px 14px;
+  border: 1.5px solid #9bc9ed;
+  border-radius: 14px;
+  background: #eef7ff;
+}
+
+.ppe-only-selected-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3979a9;
+  margin-bottom: 4px;
+}
+
+.ppe-only-selected-main {
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.ppe-only-selected-meta {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: .72;
+}
+
+/* 時間欄位：不要再像一塊大白板 */
+.ppe-only-panel input[type="datetime-local"] {
+  -webkit-appearance: auto !important;
+  appearance: auto !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  padding: 0 12px !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+  font-size: 16px !important;
+  line-height: 52px !important;
+  text-align: left !important;
+  background: #fff !important;
+}
+
+/* 空白提示位置配合新的 52px 高度 */
+.ppe-only-time-field.empty-time::after {
+  left: 13px !important;
+  bottom: 15px !important;
+  font-size: 15px !important;
+}
+
+/* 完成框 */
+.ppe-only-result {
+  border: 1px solid #b9dfbd;
+  background: #eef9ef;
+  font-weight: 650;
+}
+
+@media (max-width:560px) {
+  .ppe-only-panel input[type="datetime-local"] {
+    height: 50px !important;
+    min-height: 50px !important;
+    line-height: 50px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1257,7 +1361,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.3";
+const FRONTEND_BUILD = "V5.0.4";
 
 const S = {
   step: 1,
@@ -1303,6 +1407,8 @@ const S = {
   // V5.0：首頁 PPE 公務用車快速登打
   ppeOnlyOpen: false,
   ppeOnlyCarPlate: "",
+  // V5.0.4：三分類一次只展開一個。
+  ppeOnlyOpenGroup: "",
   ppeOnlyEndMileage: "",
   ppeOnlyDriverId: "",
   ppeOnlyDriverName: "",
@@ -1681,11 +1787,56 @@ function openPPEOnly() {
   if (S.ppeOnlyOpen) {
     S.ppeOnlyEndTouched = false;
     setPPEOnlyDefaultReturnTime();
+
+    if (!S.ppeOnlyCarPlate) {
+      S.ppeOnlyOpenGroup = "";
+    }
   }
 
   render();
   refreshNav();
 }
+
+function ppeOnlyVehicleGroup(vehicleType) {
+  if (vehicleType === "救護車") {
+    return "ambulance";
+  }
+
+  if (
+    ["水箱消防車","水庫消防車","化學消防車"]
+      .includes(vehicleType)
+  ) {
+    return "fire";
+  }
+
+  return "other";
+}
+
+
+function togglePPEOnlyGroup(key) {
+  const car =
+    getPPEOnlyCar();
+
+  // 已選車所在分類保持展開，避免手滑後看不到正在登打哪一台。
+  if (
+    car &&
+    ppeOnlyVehicleGroup(
+      car.vehicleType
+    ) === key &&
+    S.ppeOnlyOpenGroup === key
+  ) {
+    return;
+  }
+
+  S.ppeOnlyOpenGroup =
+    S.ppeOnlyOpenGroup === key
+      ? ""
+      : key;
+
+  render();
+  refreshNav();
+}
+
 
 function selectPPEOnlyCar(plate) {
   S.ppeOnlyCarPlate = plate;
@@ -1694,6 +1845,17 @@ function selectPPEOnlyCar(plate) {
   S.ppeOnlyDriverName = "";
   S.ppeOnlyDone = false;
   S.ppeOnlyMessage = "";
+
+  const selected =
+    getPPEOnlyCar();
+
+  if (selected) {
+    S.ppeOnlyOpenGroup =
+      ppeOnlyVehicleGroup(
+        selected.vehicleType
+      );
+  }
+
   render();
 }
 
@@ -1928,15 +2090,16 @@ async function submitPPEOnly() {
 
     S.ppeOnlyDone = true;
     S.ppeOnlyMessage =
-      "✅ " +
+      "🐈 " +
       (result.callSign
         ? result.callSign + "｜"
         : "") +
       result.carPlate +
-      " 已完成，里程 " +
+      " 已完成！里程 " +
       result.startMileage +
       " → " +
-      result.endMileage;
+      result.endMileage +
+      "　✨ 胖橘：登打完成";
 
     // 同步首頁目前里程，避免剛寫完畫面仍顯示舊值。
     if (car) {
@@ -2061,18 +2224,46 @@ function ppeOnlyHtml() {
             <div class="ppe-only-groups">
               ${groups.map(g => {
                 const selectedHere =
-                  g.cars.some(x => x.plate === S.ppeOnlyCarPlate);
+                  g.cars.some(
+                    x =>
+                      x.plate ===
+                      S.ppeOnlyCarPlate
+                  );
+
+                const isOpen =
+                  S.ppeOnlyOpenGroup ===
+                    g.key ||
+                  selectedHere;
+
                 return `
-                  <details
-                    class="ppe-only-group ${g.key}"
-                    ${selectedHere ? "open" : ""}>
-                    <summary>
-                      ${g.title}（${g.cars.length}）
-                    </summary>
-                    <div class="ppe-only-group-body">
-                      ${g.cars.map(vehicleButton).join("")}
-                    </div>
-                  </details>
+                  <div
+                    class="ppe-only-group ${g.key} ${
+                      isOpen ? "open" : ""
+                    }">
+                    <button
+                      type="button"
+                      class="ppe-only-group-head"
+                      onclick="togglePPEOnlyGroup('${g.key}')">
+                      <span>${g.title}（${g.cars.length}）</span>
+                      <span class="ppe-only-group-symbol">
+                        ${
+                          selectedHere
+                            ? "🔒"
+                            : isOpen
+                              ? "－"
+                              : "＋"
+                        }
+                      </span>
+                    </button>
+
+                    ${
+                      isOpen
+                        ? `<div class="ppe-only-group-body">
+                            ${g.cars.map(vehicleButton).join("")}
+                           </div>`
+                        : ""
+                    }
+                  </div>
                 `;
               }).join("")}
             </div>
@@ -2080,6 +2271,24 @@ function ppeOnlyHtml() {
         })()}
 
         ${car ? `
+          <div class="ppe-only-selected-summary">
+            <div class="ppe-only-selected-label">目前登打車輛</div>
+            <div class="ppe-only-selected-main">
+              ${
+                car.vehicleType === "救護車"
+                  ? "🚑"
+                  : ppeOnlyVehicleGroup(car.vehicleType) === "fire"
+                    ? "🚒"
+                    : "🚙"
+              }
+              ${car.callSign ? esc(car.callSign) + "｜" : ""}
+              ${esc(car.plate)}
+            </div>
+            <div class="ppe-only-selected-meta">
+              ${esc(car.vehicleType || "車輛")}｜目前里程：${car.mileage}
+            </div>
+          </div>
+
           <div class="ppe-only-divider"></div>
 
           <div class="grid2">
