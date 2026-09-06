@@ -974,6 +974,56 @@ input[type="datetime-local"] { font-size: 14px; }
 }
 </style>
 
+
+<style>
+/* V5.0.2：iPhone Safari 的 datetime-local 有較大的 intrinsic width，
+   這裡強制以 PPE 卡片內容寬度為上限，避免右側超框。 */
+.ppe-only-panel,
+.ppe-only-panel .field,
+.ppe-only-panel .grid2,
+.ppe-only-panel .grid2 > label {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.ppe-only-panel input,
+.ppe-only-panel select {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ppe-only-panel input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: -webkit-fill-available !important;
+  max-width: -webkit-fill-available !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  font-size: 16px;
+}
+
+@media (max-width: 560px) {
+  .ppe-only-panel .grid2 {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .ppe-only-panel .grid2 > label {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .ppe-only-panel input[type="datetime-local"] {
+    width: calc(100% - 2px) !important;
+    max-width: calc(100% - 2px) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1174,7 +1224,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.1";
+const FRONTEND_BUILD = "V5.0.2";
 
 const S = {
   step: 1,
@@ -1227,6 +1277,9 @@ const S = {
   ppeOnlyDestination: "",
   ppeOnlyStartDateTime: "",
   ppeOnlyEndDateTime: "",
+  // 返隊時間預設跟著「現在」更新，直到使用者自己改過返隊時間。
+  ppeOnlyEndTouched: false,
+  ppeOnlyClockTimer: null,
   ppeOnlyRunning: false,
   ppeOnlyDone: false,
   ppeOnlyMessage: ""
@@ -1577,19 +1630,72 @@ function localDateTimeValue(date) {
 }
 
 
+function syncPPEOnlyReturnTime(force) {
+  if (
+    !S.ppeOnlyOpen ||
+    (S.ppeOnlyEndTouched && !force)
+  ) {
+    return;
+  }
+
+  S.ppeOnlyEndDateTime =
+    localDateTimeValue(
+      new Date()
+    );
+
+  const endInput =
+    document.getElementById(
+      "ppeOnlyEndDateTime"
+    );
+
+  if (endInput) {
+    endInput.value =
+      S.ppeOnlyEndDateTime;
+  }
+
+  refreshNav();
+}
+
+
+function stopPPEOnlyClock() {
+  if (S.ppeOnlyClockTimer) {
+    clearInterval(
+      S.ppeOnlyClockTimer
+    );
+    S.ppeOnlyClockTimer = null;
+  }
+}
+
+
+function startPPEOnlyClock() {
+  stopPPEOnlyClock();
+
+  // 還沒手動改返隊時間前，每 20 秒把預設返隊時間更新成「現在」。
+  S.ppeOnlyClockTimer =
+    setInterval(
+      () => {
+        syncPPEOnlyReturnTime(
+          false
+        );
+      },
+      20000
+    );
+}
+
+
 function openPPEOnly() {
   S.ppeOnlyOpen = !S.ppeOnlyOpen;
   S.ppeOnlyDone = false;
   S.ppeOnlyMessage = "";
 
-  if (
-    S.ppeOnlyOpen &&
-    !S.ppeOnlyEndDateTime
-  ) {
-    S.ppeOnlyEndDateTime =
-      localDateTimeValue(
-        new Date()
-      );
+  if (S.ppeOnlyOpen) {
+    S.ppeOnlyEndTouched = false;
+    syncPPEOnlyReturnTime(
+      true
+    );
+    startPPEOnlyClock();
+  } else {
+    stopPPEOnlyClock();
   }
 
   render();
@@ -1621,6 +1727,59 @@ function getPPEOnlyCar() {
 }
 
 
+function ppeOnlyTimesValid() {
+  if (
+    !S.ppeOnlyStartDateTime ||
+    !S.ppeOnlyEndDateTime
+  ) {
+    return false;
+  }
+
+  const start =
+    new Date(
+      S.ppeOnlyStartDateTime
+    ).getTime();
+
+  const end =
+    new Date(
+      S.ppeOnlyEndDateTime
+    ).getTime();
+
+  return (
+    Number.isFinite(start) &&
+    Number.isFinite(end) &&
+    start < end
+  );
+}
+
+
+function onPPEOnlyStartTimeChanged(value) {
+  S.ppeOnlyStartDateTime =
+    value;
+
+  // 若返隊時間仍是系統預設，就在使用者選完出車時間時
+  // 立刻重新抓一次「現在」，避免打字較慢造成出車 > 返隊。
+  if (!S.ppeOnlyEndTouched) {
+    syncPPEOnlyReturnTime(
+      true
+    );
+  }
+
+  refreshNav();
+  render();
+}
+
+
+function onPPEOnlyEndTimeChanged(value) {
+  S.ppeOnlyEndDateTime =
+    value;
+  S.ppeOnlyEndTouched = true;
+  stopPPEOnlyClock();
+  refreshNav();
+  render();
+}
+
+
 function ppeOnlyReady() {
   const car =
     getPPEOnlyCar();
@@ -1639,8 +1798,7 @@ function ppeOnlyReady() {
     !!String(
       S.ppeOnlyDestination || ""
     ).trim() &&
-    !!S.ppeOnlyStartDateTime &&
-    !!S.ppeOnlyEndDateTime
+    ppeOnlyTimesValid()
   );
 }
 
@@ -1936,26 +2094,30 @@ function ppeOnlyHtml() {
           <div class="grid2">
             <label class="field">出車時間
               <input
+                id="ppeOnlyStartDateTime"
                 type="datetime-local"
                 value="${esc(S.ppeOnlyStartDateTime)}"
-                onchange="
-                  S.ppeOnlyStartDateTime=this.value;
-                  refreshNav();
-                  render();
-                ">
+                onchange="onPPEOnlyStartTimeChanged(this.value)">
             </label>
 
             <label class="field">返隊時間
               <input
+                id="ppeOnlyEndDateTime"
                 type="datetime-local"
                 value="${esc(S.ppeOnlyEndDateTime)}"
-                onchange="
-                  S.ppeOnlyEndDateTime=this.value;
-                  refreshNav();
-                  render();
-                ">
+                onchange="onPPEOnlyEndTimeChanged(this.value)">
             </label>
           </div>
+
+          ${
+            S.ppeOnlyStartDateTime &&
+            S.ppeOnlyEndDateTime &&
+            !ppeOnlyTimesValid()
+              ? `<div class="warn" style="margin:0 0 12px">
+                  ⚠️ 出車時間必須早於返隊時間
+                </div>`
+              : ""
+          }
 
           <label class="field">公務事由
             <input
@@ -2056,6 +2218,15 @@ function refreshNav() {
 }
 
 function navHtml() {
+  // PPE-only 是獨立單站流程；打開時隱藏原救護流程的「下一步」，
+  // 避免同一畫面出現兩套動作按鈕造成誤觸。
+  if (
+    S.step === 1 &&
+    S.ppeOnlyOpen
+  ) {
+    return "";
+  }
+
   if (S.step === 1) {
     return `<div class="bottomInner single">
       <button class="primary" ${nextAllowed()?"":"disabled"} onclick="setStep(2)">下一步</button>
