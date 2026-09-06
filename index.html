@@ -863,6 +863,82 @@ button.secondary::before {
 
 </style>
   <meta name="application-name" content="肥貓代打">
+
+<style>
+/* V5.0 PPE Only：刻意與上方救護案件按鈕使用不同視覺，降低誤觸。 */
+.ppe-only-launcher {
+  margin-top: 18px;
+  border: 2px dashed #9a6a22;
+  background: #fff8e8;
+  border-radius: 18px;
+  padding: 16px;
+}
+.ppe-only-launcher h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.ppe-only-launcher .sub {
+  margin-bottom: 12px;
+}
+button.ppe-only-open,
+button.ppe-only-submit {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #8a5a17;
+  color: white;
+}
+button.ppe-only-open:disabled,
+button.ppe-only-submit:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.ppe-only-panel {
+  margin-top: 16px;
+  border: 2px solid #d7b06a;
+  background: #fffaf0;
+  border-radius: 18px;
+  padding: 16px;
+}
+.ppe-only-vehicle {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #d9c8a5;
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  margin: 7px 0;
+  cursor: pointer;
+}
+.ppe-only-vehicle.selected {
+  border: 2px solid #8a5a17;
+  background: #fff1d5;
+}
+.ppe-only-vehicle .top {
+  font-weight: 800;
+}
+.ppe-only-vehicle .meta {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: .78;
+}
+.ppe-only-result {
+  margin-top: 12px;
+  border-radius: 14px;
+  padding: 12px;
+  background: #eef8ee;
+}
+.ppe-only-divider {
+  height: 1px;
+  background: #e5d6b9;
+  margin: 16px 0;
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1063,7 +1139,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V4.9";
+const FRONTEND_BUILD = "V5.0";
 
 const S = {
   step: 1,
@@ -1104,7 +1180,21 @@ const S = {
   officialDone: false,
 
   ppeLoading: false,
-  ppeError: ""
+  ppeError: "",
+
+  // V5.0：首頁 PPE 公務用車快速登打
+  ppeOnlyOpen: false,
+  ppeOnlyCarPlate: "",
+  ppeOnlyEndMileage: "",
+  ppeOnlyDriverId: "",
+  ppeOnlyDriverName: "",
+  ppeOnlyReason: "",
+  ppeOnlyDestination: "",
+  ppeOnlyStartDateTime: "",
+  ppeOnlyEndDateTime: "",
+  ppeOnlyRunning: false,
+  ppeOnlyDone: false,
+  ppeOnlyMessage: ""
 };
 
 // =====================================================
@@ -1438,6 +1528,396 @@ function scrollToFinalProgress() {
 }
 
 
+function localDateTimeValue(date) {
+  const d = date || new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return (
+    d.getFullYear() + "-" +
+    pad(d.getMonth() + 1) + "-" +
+    pad(d.getDate()) + "T" +
+    pad(d.getHours()) + ":" +
+    pad(d.getMinutes())
+  );
+}
+
+
+function openPPEOnly() {
+  S.ppeOnlyOpen = !S.ppeOnlyOpen;
+  S.ppeOnlyDone = false;
+  S.ppeOnlyMessage = "";
+
+  if (
+    S.ppeOnlyOpen &&
+    !S.ppeOnlyEndDateTime
+  ) {
+    S.ppeOnlyEndDateTime =
+      localDateTimeValue(
+        new Date()
+      );
+  }
+
+  render();
+  refreshNav();
+}
+
+
+function selectPPEOnlyCar(plate) {
+  S.ppeOnlyCarPlate = plate;
+  S.ppeOnlyEndMileage = "";
+  S.ppeOnlyDriverId = "";
+  S.ppeOnlyDriverName = "";
+  S.ppeOnlyDone = false;
+  S.ppeOnlyMessage = "";
+  render();
+}
+
+
+function getPPEOnlyCar() {
+  const cars =
+    S.bootstrap &&
+    Array.isArray(S.bootstrap.cars)
+      ? S.bootstrap.cars
+      : [];
+
+  return cars.find(
+    x => x.plate === S.ppeOnlyCarPlate
+  ) || null;
+}
+
+
+function ppeOnlyReady() {
+  const car =
+    getPPEOnlyCar();
+
+  return (
+    !!car &&
+    Number.isFinite(
+      Number(S.ppeOnlyEndMileage)
+    ) &&
+    Number(S.ppeOnlyEndMileage) >=
+      Number(car.mileage) &&
+    !!S.ppeOnlyDriverId &&
+    !!String(
+      S.ppeOnlyReason || ""
+    ).trim() &&
+    !!String(
+      S.ppeOnlyDestination || ""
+    ).trim() &&
+    !!S.ppeOnlyStartDateTime &&
+    !!S.ppeOnlyEndDateTime
+  );
+}
+
+
+async function submitPPEOnly() {
+
+  if (
+    S.ppeOnlyRunning ||
+    !ppeOnlyReady()
+  ) {
+    return;
+  }
+
+  const car =
+    getPPEOnlyCar();
+
+  const summary =
+    [
+      "只登打 PPE，其他兩個網站不會寫入。",
+      "",
+      "車輛：" +
+        car.plate +
+        (car.callSign
+          ? "｜" + car.callSign
+          : ""),
+      "車種：" +
+        (car.vehicleType || ""),
+      "里程：" +
+        car.mileage +
+        " → " +
+        S.ppeOnlyEndMileage,
+      "事由：" +
+        S.ppeOnlyReason.trim(),
+      "地點：" +
+        S.ppeOnlyDestination.trim(),
+      "",
+      "確定寫入 PPE？"
+    ].join("\n");
+
+  if (!window.confirm(summary)) {
+    return;
+  }
+
+  S.ppeOnlyRunning = true;
+  S.ppeOnlyDone = false;
+  S.ppeOnlyMessage = "";
+  render();
+
+  try {
+
+    const result =
+      await gs(
+        "appSubmitPPEOnlyStation",
+        {
+          carPlate:
+            S.ppeOnlyCarPlate,
+          endMileage:
+            Number(
+              S.ppeOnlyEndMileage
+            ),
+          driverId:
+            S.ppeOnlyDriverId,
+          driverName:
+            S.ppeOnlyDriverName,
+          reason:
+            String(
+              S.ppeOnlyReason || ""
+            ).trim(),
+          destination:
+            String(
+              S.ppeOnlyDestination || ""
+            ).trim(),
+          startDateTime:
+            S.ppeOnlyStartDateTime,
+          endDateTime:
+            S.ppeOnlyEndDateTime,
+          remarks: ""
+        }
+      );
+
+    if (
+      !result ||
+      result.success !== true ||
+      result.serverBuild !==
+        FRONTEND_BUILD
+    ) {
+      throw new Error(
+        "PPE 寫入回傳異常"
+      );
+    }
+
+    S.ppeOnlyDone = true;
+    S.ppeOnlyMessage =
+      "✅ " +
+      (result.callSign
+        ? result.callSign + "｜"
+        : "") +
+      result.carPlate +
+      " 已完成，里程 " +
+      result.startMileage +
+      " → " +
+      result.endMileage;
+
+    // 同步首頁目前里程，避免剛寫完畫面仍顯示舊值。
+    if (car) {
+      car.mileage =
+        Number(
+          result.endMileage
+        );
+    }
+
+  } catch (e) {
+    S.ppeOnlyMessage =
+      "❌ " +
+      (
+        e && e.message
+          ? e.message
+          : String(e)
+      );
+  } finally {
+    S.ppeOnlyRunning = false;
+    render();
+  }
+}
+
+
+function ppeOnlyHtml() {
+
+  const ready =
+    S.bootstrap &&
+    S.bootstrap.ppeReady;
+
+  if (!S.ppeOnlyOpen) {
+    return `
+      <div class="ppe-only-launcher">
+        <h3>🚙 公務用車快速登打</h3>
+        <div class="sub">
+          只登打 PPE 車輛里程，不寫勤務管理、不寫 EMS。
+        </div>
+        <button
+          class="ppe-only-open"
+          ${ready ? "" : "disabled"}
+          onclick="openPPEOnly()">
+          ${
+            ready
+              ? "只登打 PPE 車輛紀錄"
+              : "車輛資料背景載入中…"
+          }
+        </button>
+      </div>
+    `;
+  }
+
+  const car =
+    getPPEOnlyCar();
+
+  const cars =
+    Array.isArray(
+      S.bootstrap.cars
+    )
+      ? S.bootstrap.cars
+      : [];
+
+  return `
+    <div class="ppe-only-launcher">
+      <h3>🚙 公務用車｜只登打 PPE</h3>
+      <div class="sub">
+        這一區完全獨立，不會登打勤務管理或 EMS。
+      </div>
+
+      <button
+        class="secondary"
+        style="width:100%;margin-bottom:10px"
+        onclick="openPPEOnly()">
+        收起公務用車登打
+      </button>
+
+      <div class="ppe-only-panel">
+        <label class="field">選擇車輛</label>
+
+        ${cars.map(x => `
+          <button
+            class="ppe-only-vehicle ${
+              S.ppeOnlyCarPlate ===
+              x.plate
+                ? "selected"
+                : ""
+            }"
+            onclick="selectPPEOnlyCar('${x.plate}')">
+            <div class="top">
+              ${esc(x.plate)}
+              ${
+                x.callSign
+                  ? `｜${esc(x.callSign)}`
+                  : ""
+              }
+            </div>
+            <div class="meta">
+              ${esc(x.vehicleType || "車輛")}
+              ｜目前里程：${x.mileage}
+            </div>
+          </button>
+        `).join("")}
+
+        ${car ? `
+          <div class="ppe-only-divider"></div>
+
+          <div class="grid2">
+            <label class="field">目前里程
+              <input
+                value="${car.mileage}"
+                disabled>
+            </label>
+
+            <label class="field">返隊里程
+              <input
+                type="number"
+                inputmode="numeric"
+                value="${esc(S.ppeOnlyEndMileage)}"
+                oninput="
+                  S.ppeOnlyEndMileage=this.value;
+                  refreshNav();
+                ">
+            </label>
+          </div>
+
+          <label class="field">駕駛
+            <select onchange="
+              S.ppeOnlyDriverId=this.value;
+              const o=this.options[this.selectedIndex];
+              S.ppeOnlyDriverName=o.dataset.name||'';
+            ">
+              <option value="">
+                ${S.bootstrap.drivers.length
+                  ? "請選擇駕駛"
+                  : "查無竹圍分隊駕駛"}
+              </option>
+              ${S.bootstrap.drivers.map(d => `
+                <option
+                  value="${esc(d.id)}"
+                  data-name="${esc(d.name)}"
+                  ${
+                    S.ppeOnlyDriverId === d.id
+                      ? "selected"
+                      : ""
+                  }>
+                  ${esc(d.name)}
+                </option>
+              `).join("")}
+            </select>
+          </label>
+
+          <div class="grid2">
+            <label class="field">出車時間
+              <input
+                type="datetime-local"
+                value="${esc(S.ppeOnlyStartDateTime)}"
+                onchange="S.ppeOnlyStartDateTime=this.value">
+            </label>
+
+            <label class="field">返隊時間
+              <input
+                type="datetime-local"
+                value="${esc(S.ppeOnlyEndDateTime)}"
+                onchange="S.ppeOnlyEndDateTime=this.value">
+            </label>
+          </div>
+
+          <label class="field">公務事由
+            <input
+              value="${esc(S.ppeOnlyReason)}"
+              placeholder="例如：公務、送修、補給…"
+              oninput="S.ppeOnlyReason=this.value">
+          </label>
+
+          <label class="field">前往地點
+            <input
+              value="${esc(S.ppeOnlyDestination)}"
+              placeholder="請輸入前往地點"
+              oninput="S.ppeOnlyDestination=this.value">
+          </label>
+
+          ${
+            S.ppeOnlyMessage
+              ? `<div class="ppe-only-result">
+                  ${esc(S.ppeOnlyMessage)}
+                </div>`
+              : ""
+          }
+
+          <button
+            class="ppe-only-submit"
+            style="margin-top:14px"
+            ${
+              ppeOnlyReady() &&
+              !S.ppeOnlyRunning
+                ? ""
+                : "disabled"
+            }
+            onclick="submitPPEOnly()">
+            ${
+              S.ppeOnlyRunning
+                ? "PPE 寫入中…"
+                : "只寫入 PPE 車輛紀錄"
+            }
+          </button>
+        ` : ""}
+      </div>
+    </div>
+  `;
+}
+
+
 function nextAllowed() {
   if (S.step === 1) return !!S.candidate;
 
@@ -1515,7 +1995,9 @@ function render() {
         <h2>① 選擇本次案件</h2>
         <div class="sub">最近 12 小時最多顯示 3 筆緊急救護＋必要時 1 筆火災。</div>
         ${rows || `<div class="warn">目前沒有找到候選案件。正式版會提供「找不到我的案件」備援流程。</div>`}
-      </div>`;
+      </div>
+
+      ${ppeOnlyHtml()}`;
   }
 
   if (S.step === 2) {
@@ -1608,7 +2090,9 @@ function render() {
       <div class="card">
         <h2>③ 車輛資料</h2>
         <div class="sub">目前里程會直接從 車輛後勤系統讀取。</div>
-        ${S.bootstrap.cars.map(x=>`
+        ${S.bootstrap.cars
+          .filter(x => x.vehicleType === "救護車")
+          .map(x=>`
           <button class="choice ${S.carPlate===x.plate?"selected":""}" onclick="selectCar('${x.plate}')">
             <div class="top">${x.plate}${x.callSign ? `｜${esc(x.callSign)}` : ""}</div>
             <div class="meta">目前里程：${x.mileage}</div>
@@ -3038,7 +3522,10 @@ async function loadPPEInBackground(
 
     S.ppeError = "";
 
-    if (S.step === 3) {
+    if (
+      S.step === 1 ||
+      S.step === 3
+    ) {
       render();
       refreshNav();
     }
