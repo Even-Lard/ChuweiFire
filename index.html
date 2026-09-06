@@ -1024,6 +1024,39 @@ input[type="datetime-local"] { font-size: 14px; }
 }
 </style>
 
+
+<style>
+/* V5.0.3：空白的出車時間也要像一顆可點的大欄位 */
+.ppe-only-panel input[type="datetime-local"] {
+  min-height: 58px !important;
+  height: 58px !important;
+  padding: 0 14px !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  line-height: normal !important;
+}
+
+/* iPhone 空白 datetime-local 原生內容可能幾乎看不見，
+   用父 label 的提示補足「這裡可以點」。 */
+.ppe-only-time-field {
+  position: relative;
+}
+
+.ppe-only-time-field.empty-time::after {
+  content: "點一下選擇時間";
+  position: absolute;
+  left: 15px;
+  bottom: 18px;
+  color: #9aa0a6;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.ppe-only-time-field.empty-time:focus-within::after {
+  display: none;
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1224,7 +1257,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.2";
+const FRONTEND_BUILD = "V5.0.3";
 
 const S = {
   step: 1,
@@ -1279,7 +1312,6 @@ const S = {
   ppeOnlyEndDateTime: "",
   // 返隊時間預設跟著「現在」更新，直到使用者自己改過返隊時間。
   ppeOnlyEndTouched: false,
-  ppeOnlyClockTimer: null,
   ppeOnlyRunning: false,
   ppeOnlyDone: false,
   ppeOnlyMessage: ""
@@ -1630,55 +1662,13 @@ function localDateTimeValue(date) {
 }
 
 
-function syncPPEOnlyReturnTime(force) {
-  if (
-    !S.ppeOnlyOpen ||
-    (S.ppeOnlyEndTouched && !force)
-  ) {
-    return;
-  }
-
+function setPPEOnlyDefaultReturnTime() {
+  // 只在「開啟 PPE-only」時預帶一次現在時間。
+  // 不使用 interval、不在日期選擇器開啟時重繪 DOM，
+  // 避免 iPhone Safari picker 被強制關閉。
   S.ppeOnlyEndDateTime =
     localDateTimeValue(
       new Date()
-    );
-
-  const endInput =
-    document.getElementById(
-      "ppeOnlyEndDateTime"
-    );
-
-  if (endInput) {
-    endInput.value =
-      S.ppeOnlyEndDateTime;
-  }
-
-  refreshNav();
-}
-
-
-function stopPPEOnlyClock() {
-  if (S.ppeOnlyClockTimer) {
-    clearInterval(
-      S.ppeOnlyClockTimer
-    );
-    S.ppeOnlyClockTimer = null;
-  }
-}
-
-
-function startPPEOnlyClock() {
-  stopPPEOnlyClock();
-
-  // 還沒手動改返隊時間前，每 20 秒把預設返隊時間更新成「現在」。
-  S.ppeOnlyClockTimer =
-    setInterval(
-      () => {
-        syncPPEOnlyReturnTime(
-          false
-        );
-      },
-      20000
     );
 }
 
@@ -1690,18 +1680,12 @@ function openPPEOnly() {
 
   if (S.ppeOnlyOpen) {
     S.ppeOnlyEndTouched = false;
-    syncPPEOnlyReturnTime(
-      true
-    );
-    startPPEOnlyClock();
-  } else {
-    stopPPEOnlyClock();
+    setPPEOnlyDefaultReturnTime();
   }
 
   render();
   refreshNav();
 }
-
 
 function selectPPEOnlyCar(plate) {
   S.ppeOnlyCarPlate = plate;
@@ -1757,16 +1741,21 @@ function onPPEOnlyStartTimeChanged(value) {
   S.ppeOnlyStartDateTime =
     value;
 
-  // 若返隊時間仍是系統預設，就在使用者選完出車時間時
-  // 立刻重新抓一次「現在」，避免打字較慢造成出車 > 返隊。
-  if (!S.ppeOnlyEndTouched) {
-    syncPPEOnlyReturnTime(
-      true
+  const startField =
+    document.getElementById(
+      "ppeOnlyStartTimeField"
+    );
+
+  if (startField) {
+    startField.classList.toggle(
+      "empty-time",
+      !value
     );
   }
 
+  // 不 render()：iPhone 的 datetime picker 才不會被 DOM 重建而關掉。
   refreshNav();
-  render();
+  refreshPPEOnlyTimeWarning();
 }
 
 
@@ -1774,11 +1763,31 @@ function onPPEOnlyEndTimeChanged(value) {
   S.ppeOnlyEndDateTime =
     value;
   S.ppeOnlyEndTouched = true;
-  stopPPEOnlyClock();
+
+  // 使用者手動改返隊時間後，正式送出時尊重此時間。
   refreshNav();
-  render();
+  refreshPPEOnlyTimeWarning();
 }
 
+
+function refreshPPEOnlyTimeWarning() {
+  const box =
+    document.getElementById(
+      "ppeOnlyTimeWarning"
+    );
+
+  if (!box) {
+    return;
+  }
+
+  const show =
+    !!S.ppeOnlyStartDateTime &&
+    !!S.ppeOnlyEndDateTime &&
+    !ppeOnlyTimesValid();
+
+  box.style.display =
+    show ? "block" : "none";
+}
 
 function ppeOnlyReady() {
   const car =
@@ -1814,6 +1823,33 @@ async function submitPPEOnly() {
 
   const car =
     getPPEOnlyCar();
+
+  // 使用者沒有手動改過返隊時間：真正按下寫入時才更新成現在，
+  // 這樣即使表單填了幾分鐘也不會出現「時間逆流」。
+  if (!S.ppeOnlyEndTouched) {
+    S.ppeOnlyEndDateTime =
+      localDateTimeValue(
+        new Date()
+      );
+
+    const endInput =
+      document.getElementById(
+        "ppeOnlyEndDateTime"
+      );
+
+    if (endInput) {
+      endInput.value =
+        S.ppeOnlyEndDateTime;
+    }
+  }
+
+  if (!ppeOnlyTimesValid()) {
+    S.ppeOnlyMessage =
+      "❌ 出車時間必須早於返隊時間";
+    refreshPPEOnlyTimeWarning();
+    refreshNav();
+    return;
+  }
 
   const summary =
     [
@@ -2092,7 +2128,11 @@ function ppeOnlyHtml() {
           </label>
 
           <div class="grid2">
-            <label class="field">出車時間
+            <label
+              id="ppeOnlyStartTimeField"
+              class="field ppe-only-time-field ${
+                S.ppeOnlyStartDateTime ? "" : "empty-time"
+              }">出車時間
               <input
                 id="ppeOnlyStartDateTime"
                 type="datetime-local"
@@ -2109,15 +2149,18 @@ function ppeOnlyHtml() {
             </label>
           </div>
 
-          ${
-            S.ppeOnlyStartDateTime &&
-            S.ppeOnlyEndDateTime &&
-            !ppeOnlyTimesValid()
-              ? `<div class="warn" style="margin:0 0 12px">
-                  ⚠️ 出車時間必須早於返隊時間
-                </div>`
-              : ""
-          }
+          <div
+            id="ppeOnlyTimeWarning"
+            class="warn"
+            style="margin:0 0 12px;display:${
+              S.ppeOnlyStartDateTime &&
+              S.ppeOnlyEndDateTime &&
+              !ppeOnlyTimesValid()
+                ? "block"
+                : "none"
+            }">
+            ⚠️ 出車時間必須早於返隊時間
+          </div>
 
           <label class="field">公務事由
             <input
