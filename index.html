@@ -1161,6 +1161,84 @@ input[type="datetime-local"] { font-size: 14px; }
 }
 </style>
 
+
+<style>
+/* ===== V5.0.5 iPhone 日期時間框 =====
+   Safari 的 datetime-local 有不可控的原生 intrinsic width。
+   改為「透明原生 input 覆蓋在自訂外觀上」：
+   點擊仍是原生 iPhone 日期選擇器，但畫面尺寸完全由我們控制。 */
+
+.ppe-datetime-shell {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #c9d1d8;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.ppe-datetime-display {
+  position: absolute;
+  inset: 0 44px 0 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 16px;
+  line-height: 1;
+  color: #111827;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.ppe-datetime-display.placeholder {
+  color: #9aa0a6;
+}
+
+.ppe-datetime-icon {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.ppe-datetime-native {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* 蓋掉前幾版針對可見 datetime-local 的樣式 */
+.ppe-only-panel input[type="datetime-local"] {
+  min-height: 0 !important;
+  height: 100% !important;
+  line-height: normal !important;
+  background: transparent !important;
+}
+
+@media (max-width: 560px) {
+  .ppe-datetime-shell {
+    height: 50px;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -1361,7 +1439,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.4";
+const FRONTEND_BUILD = "V5.0.5";
 
 const S = {
   step: 1,
@@ -1768,6 +1846,62 @@ function localDateTimeValue(date) {
 }
 
 
+function formatPPEOnlyDateTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const m =
+    String(value).match(
+      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+    );
+
+  if (!m) {
+    return value;
+  }
+
+  return (
+    m[1] + "/" +
+    m[2] + "/" +
+    m[3] + " " +
+    m[4] + ":" +
+    m[5]
+  );
+}
+
+
+function syncPPEOnlyTimeDisplay(which) {
+  const isStart =
+    which === "start";
+
+  const value =
+    isStart
+      ? S.ppeOnlyStartDateTime
+      : S.ppeOnlyEndDateTime;
+
+  const display =
+    document.getElementById(
+      isStart
+        ? "ppeOnlyStartDisplay"
+        : "ppeOnlyEndDisplay"
+    );
+
+  if (!display) {
+    return;
+  }
+
+  display.textContent =
+    value
+      ? formatPPEOnlyDateTime(value)
+      : "點一下選擇時間";
+
+  display.classList.toggle(
+    "placeholder",
+    !value
+  );
+}
+
+
 function setPPEOnlyDefaultReturnTime() {
   // 只在「開啟 PPE-only」時預帶一次現在時間。
   // 不使用 interval、不在日期選擇器開啟時重繪 DOM，
@@ -1903,19 +2037,11 @@ function onPPEOnlyStartTimeChanged(value) {
   S.ppeOnlyStartDateTime =
     value;
 
-  const startField =
-    document.getElementById(
-      "ppeOnlyStartTimeField"
-    );
+  syncPPEOnlyTimeDisplay(
+    "start"
+  );
 
-  if (startField) {
-    startField.classList.toggle(
-      "empty-time",
-      !value
-    );
-  }
-
-  // 不 render()：iPhone 的 datetime picker 才不會被 DOM 重建而關掉。
+  // 不 render()：避免 iPhone 日期選擇器被 DOM 重建後關閉。
   refreshNav();
   refreshPPEOnlyTimeWarning();
 }
@@ -1925,6 +2051,10 @@ function onPPEOnlyEndTimeChanged(value) {
   S.ppeOnlyEndDateTime =
     value;
   S.ppeOnlyEndTouched = true;
+
+  syncPPEOnlyTimeDisplay(
+    "end"
+  );
 
   // 使用者手動改返隊時間後，正式送出時尊重此時間。
   refreshNav();
@@ -2003,6 +2133,10 @@ async function submitPPEOnly() {
       endInput.value =
         S.ppeOnlyEndDateTime;
     }
+
+    syncPPEOnlyTimeDisplay(
+      "end"
+    );
   }
 
   if (!ppeOnlyTimesValid()) {
@@ -2337,24 +2471,52 @@ function ppeOnlyHtml() {
           </label>
 
           <div class="grid2">
-            <label
-              id="ppeOnlyStartTimeField"
-              class="field ppe-only-time-field ${
-                S.ppeOnlyStartDateTime ? "" : "empty-time"
-              }">出車時間
-              <input
-                id="ppeOnlyStartDateTime"
-                type="datetime-local"
-                value="${esc(S.ppeOnlyStartDateTime)}"
-                onchange="onPPEOnlyStartTimeChanged(this.value)">
+            <label class="field">出車時間
+              <div class="ppe-datetime-shell">
+                <div
+                  id="ppeOnlyStartDisplay"
+                  class="ppe-datetime-display ${
+                    S.ppeOnlyStartDateTime ? "" : "placeholder"
+                  }">
+                  ${
+                    S.ppeOnlyStartDateTime
+                      ? esc(formatPPEOnlyDateTime(S.ppeOnlyStartDateTime))
+                      : "點一下選擇時間"
+                  }
+                </div>
+                <span class="ppe-datetime-icon">📅</span>
+                <input
+                  id="ppeOnlyStartDateTime"
+                  class="ppe-datetime-native"
+                  type="datetime-local"
+                  value="${esc(S.ppeOnlyStartDateTime)}"
+                  onchange="onPPEOnlyStartTimeChanged(this.value)"
+                  aria-label="出車時間">
+              </div>
             </label>
 
             <label class="field">返隊時間
-              <input
-                id="ppeOnlyEndDateTime"
-                type="datetime-local"
-                value="${esc(S.ppeOnlyEndDateTime)}"
-                onchange="onPPEOnlyEndTimeChanged(this.value)">
+              <div class="ppe-datetime-shell">
+                <div
+                  id="ppeOnlyEndDisplay"
+                  class="ppe-datetime-display ${
+                    S.ppeOnlyEndDateTime ? "" : "placeholder"
+                  }">
+                  ${
+                    S.ppeOnlyEndDateTime
+                      ? esc(formatPPEOnlyDateTime(S.ppeOnlyEndDateTime))
+                      : "點一下選擇時間"
+                  }
+                </div>
+                <span class="ppe-datetime-icon">📅</span>
+                <input
+                  id="ppeOnlyEndDateTime"
+                  class="ppe-datetime-native"
+                  type="datetime-local"
+                  value="${esc(S.ppeOnlyEndDateTime)}"
+                  onchange="onPPEOnlyEndTimeChanged(this.value)"
+                  aria-label="返隊時間">
+              </div>
             </label>
           </div>
 
