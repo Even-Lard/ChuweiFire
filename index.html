@@ -1063,7 +1063,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V4.8.2";
+const FRONTEND_BUILD = "V4.9";
 
 const S = {
   step: 1,
@@ -1610,7 +1610,7 @@ function render() {
         <div class="sub">目前里程會直接從 車輛後勤系統讀取。</div>
         ${S.bootstrap.cars.map(x=>`
           <button class="choice ${S.carPlate===x.plate?"selected":""}" onclick="selectCar('${x.plate}')">
-            <div class="top">${x.plate}</div>
+            <div class="top">${x.plate}${x.callSign ? `｜${esc(x.callSign)}` : ""}</div>
             <div class="meta">目前里程：${x.mileage}</div>
           </button>
         `).join("")}
