@@ -1239,6 +1239,11 @@ input[type="datetime-local"] { font-size: 14px; }
 }
 </style>
 
+
+<style>
+/* V5.0.6 PPE lazy-load */
+.ppe-group-status{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;opacity:.65}.ppe-group-status.error{color:#b45309;opacity:1}.ppe-only-vehicle-loading,.ppe-only-vehicle-error,.ppe-rescue-read-error{width:100%;box-sizing:border-box;padding:13px 14px;margin-bottom:9px;border:1px solid #d7dce1;border-radius:14px;background:#fff}.ppe-only-vehicle-loading{opacity:.72}.ppe-only-vehicle-error,.ppe-rescue-read-error{border-color:#e8c58b;background:#fffaf0}.ppe-only-vehicle-loading .top,.ppe-only-vehicle-error .top,.ppe-rescue-read-error .top{font-weight:800}.ppe-only-vehicle-loading .meta,.ppe-only-vehicle-error .meta,.ppe-rescue-read-error .meta{margin-top:4px;font-size:13px;opacity:.75}.ppe-car-retry{margin-top:10px;min-height:38px;padding:7px 12px;border:1px solid #d7aa61;border-radius:10px;background:#fff;font-weight:800;font-size:13px;cursor:pointer}.ppe-car-retry:disabled{opacity:.55;cursor:default}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1439,7 +1444,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.5";
+const FRONTEND_BUILD = "V5.0.6";
 
 const S = {
   step: 1,
@@ -1481,6 +1486,10 @@ const S = {
 
   ppeLoading: false,
   ppeError: "",
+  ppeCarErrors: {},
+  ppeCarRetrying: {},
+  ppeGroupLoading: { ambulance:false, fire:false, other:false },
+  ppeGroupLoaded: { ambulance:false, fire:false, other:false },
 
   // V5.0：首頁 PPE 公務用車快速登打
   ppeOnlyOpen: false,
@@ -1947,30 +1956,54 @@ function ppeOnlyVehicleGroup(vehicleType) {
 }
 
 
-function togglePPEOnlyGroup(key) {
-  const car =
-    getPPEOnlyCar();
-
-  // 已選車所在分類保持展開，避免手滑後看不到正在登打哪一台。
-  if (
-    car &&
-    ppeOnlyVehicleGroup(
-      car.vehicleType
-    ) === key &&
-    S.ppeOnlyOpenGroup === key
-  ) {
-    return;
-  }
-
-  S.ppeOnlyOpenGroup =
-    S.ppeOnlyOpenGroup === key
-      ? ""
-      : key;
-
-  render();
-  refreshNav();
+function ppeCatalog() {
+  return S.bootstrap && Array.isArray(S.bootstrap.ppeCatalog) ? S.bootstrap.ppeCatalog : (S.bootstrap && Array.isArray(S.bootstrap.cars) ? S.bootstrap.cars : []);
 }
-
+function upsertPPECars(newCars) {
+  if (!S.bootstrap) return;
+  const map = new Map((Array.isArray(S.bootstrap.cars)?S.bootstrap.cars:[]).map(x=>[x.plate,x]));
+  (Array.isArray(newCars)?newCars:[]).forEach(x=>map.set(x.plate,x));
+  S.bootstrap.cars = Array.from(map.values());
+}
+function applyPPECarErrors(errors, plates) {
+  (plates||[]).forEach(p=>delete S.ppeCarErrors[p]);
+  Object.entries(errors||{}).forEach(([p,msg])=>S.ppeCarErrors[p]=String(msg||"讀取失敗"));
+}
+async function loadPPEOnlyGroup(key, force) {
+  if (!["ambulance","fire","other"].includes(key) || S.ppeGroupLoading[key]) return;
+  if (S.ppeGroupLoaded[key] && !force) return;
+  S.ppeGroupLoading[key]=true; render(); refreshNav();
+  try {
+    const result=await gs("appLoadPPEGroup",key);
+    if (!result || result.serverBuild!==FRONTEND_BUILD) throw new Error("PPE 分類資料版本不一致");
+    upsertPPECars(result.cars);
+    const plates=ppeCatalog().filter(x=>ppeOnlyVehicleGroup(x.vehicleType)===key).map(x=>x.plate);
+    applyPPECarErrors(result.errors,plates);
+    S.ppeGroupLoaded[key]=true;
+  } catch(err) {
+    const msg=err&&err.message?err.message:String(err);
+    ppeCatalog().filter(x=>ppeOnlyVehicleGroup(x.vehicleType)===key).forEach(x=>S.ppeCarErrors[x.plate]=msg);
+    S.ppeGroupLoaded[key]=true;
+  } finally { S.ppeGroupLoading[key]=false; render(); refreshNav(); }
+}
+async function retryPPECar(plate) {
+  if (S.ppeCarRetrying[plate]) return;
+  S.ppeCarRetrying[plate]=true; delete S.ppeCarErrors[plate]; render();
+  try {
+    const result=await gs("appLoadPPECar",plate);
+    if (!result || result.serverBuild!==FRONTEND_BUILD || !result.car) throw new Error("單車資料回傳異常");
+    upsertPPECars([result.car]); delete S.ppeCarErrors[plate];
+  } catch(err) { S.ppeCarErrors[plate]=err&&err.message?err.message:String(err); }
+  finally { S.ppeCarRetrying[plate]=false; render(); refreshNav(); }
+}
+function togglePPEOnlyGroup(key) {
+  const car=getPPEOnlyCar();
+  if (car && ppeOnlyVehicleGroup(car.vehicleType)===key && S.ppeOnlyOpenGroup===key) return;
+  const opening=S.ppeOnlyOpenGroup!==key;
+  S.ppeOnlyOpenGroup=opening?key:"";
+  render(); refreshNav();
+  if (opening && !S.ppeGroupLoaded[key]) loadPPEOnlyGroup(key,false);
+}
 
 function selectPPEOnlyCar(plate) {
   S.ppeOnlyCarPlate = plate;
@@ -2073,6 +2106,7 @@ function refreshPPEOnlyTimeWarning() {
   }
 
   const show =
+    !!S.ppeOnlyEndTouched &&
     !!S.ppeOnlyStartDateTime &&
     !!S.ppeOnlyEndDateTime &&
     !ppeOnlyTimesValid();
@@ -2082,42 +2116,18 @@ function refreshPPEOnlyTimeWarning() {
 }
 
 function ppeOnlyReady() {
-  const car =
-    getPPEOnlyCar();
-
-  return (
-    !!car &&
-    Number.isFinite(
-      Number(S.ppeOnlyEndMileage)
-    ) &&
-    Number(S.ppeOnlyEndMileage) >=
-      Number(car.mileage) &&
-    !!S.ppeOnlyDriverId &&
-    !!String(
-      S.ppeOnlyReason || ""
-    ).trim() &&
-    !!String(
-      S.ppeOnlyDestination || ""
-    ).trim() &&
-    ppeOnlyTimesValid()
-  );
+  const car=getPPEOnlyCar();
+  const startTime=S.ppeOnlyStartDateTime?new Date(S.ppeOnlyStartDateTime).getTime():NaN;
+  const effectiveTimeValid=S.ppeOnlyEndTouched?ppeOnlyTimesValid():(Number.isFinite(startTime)&&startTime<Date.now());
+  return !!car && Number.isFinite(Number(S.ppeOnlyEndMileage)) && Number(S.ppeOnlyEndMileage)>=Number(car.mileage) && !!S.ppeOnlyDriverId && !!String(S.ppeOnlyReason||"").trim() && !!String(S.ppeOnlyDestination||"").trim() && effectiveTimeValid;
 }
-
-
 async function submitPPEOnly() {
 
-  if (
-    S.ppeOnlyRunning ||
-    !ppeOnlyReady()
-  ) {
+  if (S.ppeOnlyRunning) {
     return;
   }
 
-  const car =
-    getPPEOnlyCar();
-
-  // 使用者沒有手動改過返隊時間：真正按下寫入時才更新成現在，
-  // 這樣即使表單填了幾分鐘也不會出現「時間逆流」。
+  // 使用者沒有手動調整返隊時間時，真正按下寫入才更新為「此刻」。
   if (!S.ppeOnlyEndTouched) {
     S.ppeOnlyEndDateTime =
       localDateTimeValue(
@@ -2138,6 +2148,13 @@ async function submitPPEOnly() {
       "end"
     );
   }
+
+  if (!ppeOnlyReady()) {
+    refreshNav();
+    return;
+  }
+
+  const car = getPPEOnlyCar();
 
   if (!ppeOnlyTimesValid()) {
     S.ppeOnlyMessage =
@@ -2313,95 +2330,20 @@ function ppeOnlyHtml() {
         <label class="field">選擇車輛</label>
 
         ${(() => {
+          const catalog = ppeCatalog();
           const groups = [
-            {
-              key: "ambulance",
-              title: "🚑 救護車",
-              cars: cars.filter(x => x.vehicleType === "救護車")
-            },
-            {
-              key: "fire",
-              title: "🚒 消防車",
-              cars: cars.filter(x =>
-                ["水箱消防車","水庫消防車","化學消防車"]
-                  .includes(x.vehicleType)
-              )
-            },
-            {
-              key: "other",
-              title: "🚙 其他公務車",
-              cars: cars.filter(x =>
-                !["救護車","水箱消防車","水庫消防車","化學消防車"]
-                  .includes(x.vehicleType)
-              )
-            }
+            {key:"ambulance",title:"🚑 救護車",cars:catalog.filter(x=>x.vehicleType==="救護車")},
+            {key:"fire",title:"🚒 消防車",cars:catalog.filter(x=>["水箱消防車","水庫消防車","化學消防車"].includes(x.vehicleType))},
+            {key:"other",title:"🚙 其他公務車",cars:catalog.filter(x=>!["救護車","水箱消防車","水庫消防車","化學消防車"].includes(x.vehicleType))}
           ];
-
-          const vehicleButton = x => `
-            <button
-              class="ppe-only-vehicle ${
-                S.ppeOnlyCarPlate === x.plate ? "selected" : ""
-              }"
-              onclick="selectPPEOnlyCar('${x.plate}')">
-              <div class="top">
-                ${esc(x.plate)}
-                ${x.callSign ? `｜${esc(x.callSign)}` : ""}
-              </div>
-              <div class="meta">
-                ${esc(x.vehicleType || "車輛")}
-                ｜目前里程：${x.mileage}
-              </div>
-            </button>
-          `;
-
-          return `
-            <div class="ppe-only-groups">
-              ${groups.map(g => {
-                const selectedHere =
-                  g.cars.some(
-                    x =>
-                      x.plate ===
-                      S.ppeOnlyCarPlate
-                  );
-
-                const isOpen =
-                  S.ppeOnlyOpenGroup ===
-                    g.key ||
-                  selectedHere;
-
-                return `
-                  <div
-                    class="ppe-only-group ${g.key} ${
-                      isOpen ? "open" : ""
-                    }">
-                    <button
-                      type="button"
-                      class="ppe-only-group-head"
-                      onclick="togglePPEOnlyGroup('${g.key}')">
-                      <span>${g.title}（${g.cars.length}）</span>
-                      <span class="ppe-only-group-symbol">
-                        ${
-                          selectedHere
-                            ? "🔒"
-                            : isOpen
-                              ? "－"
-                              : "＋"
-                        }
-                      </span>
-                    </button>
-
-                    ${
-                      isOpen
-                        ? `<div class="ppe-only-group-body">
-                            ${g.cars.map(vehicleButton).join("")}
-                           </div>`
-                        : ""
-                    }
-                  </div>
-                `;
-              }).join("")}
-            </div>
-          `;
+          const loadedMap=new Map((Array.isArray(S.bootstrap.cars)?S.bootstrap.cars:[]).map(x=>[x.plate,x]));
+          const vehicleRow=meta=>{
+            const loaded=loadedMap.get(meta.plate), error=S.ppeCarErrors[meta.plate], retrying=!!S.ppeCarRetrying[meta.plate];
+            if (loaded) return `<button class="ppe-only-vehicle ${S.ppeOnlyCarPlate===loaded.plate?"selected":""}" onclick="selectPPEOnlyCar('${loaded.plate}')"><div class="top">${esc(loaded.plate)}${loaded.callSign?`｜${esc(loaded.callSign)}`:""}</div><div class="meta">${esc(loaded.vehicleType||"車輛")}｜目前里程：${loaded.mileage}</div></button>`;
+            if (error) return `<div class="ppe-only-vehicle-error"><div class="top">${esc(meta.plate)}${meta.callSign?`｜${esc(meta.callSign)}`:""}</div><div class="meta">${esc(meta.vehicleType||"車輛")}｜⚠️ 目前里程讀取失敗</div><button type="button" class="ppe-car-retry" ${retrying?"disabled":""} onclick="event.stopPropagation();retryPPECar('${meta.plate}')">${retrying?"重新讀取中…":"重新讀取這台"}</button></div>`;
+            return `<div class="ppe-only-vehicle-loading"><div class="top">${esc(meta.plate)}${meta.callSign?`｜${esc(meta.callSign)}`:""}</div><div class="meta">${esc(meta.vehicleType||"車輛")}｜🐾 目前里程讀取中…</div></div>`;
+          };
+          return `<div class="ppe-only-groups">${groups.map(g=>{const selectedHere=g.cars.some(x=>x.plate===S.ppeOnlyCarPlate),isOpen=S.ppeOnlyOpenGroup===g.key||selectedHere,loading=!!S.ppeGroupLoading[g.key],errors=g.cars.filter(x=>!!S.ppeCarErrors[x.plate]).length;return `<div class="ppe-only-group ${g.key} ${isOpen?"open":""}"><button type="button" class="ppe-only-group-head" onclick="togglePPEOnlyGroup('${g.key}')"><span>${g.title}（${g.cars.length}）${loading?`<small class="ppe-group-status">讀取中…</small>`:errors?`<small class="ppe-group-status error">${errors} 台待重讀</small>`:""}</span><span class="ppe-only-group-symbol">${selectedHere?"🔒":isOpen?"－":"＋"}</span></button>${isOpen?`<div class="ppe-only-group-body">${g.cars.map(vehicleRow).join("")}</div>`:""}</div>`;}).join("")}</div>`;
         })()}
 
         ${car ? `
@@ -2524,6 +2466,7 @@ function ppeOnlyHtml() {
             id="ppeOnlyTimeWarning"
             class="warn"
             style="margin:0 0 12px;display:${
+              S.ppeOnlyEndTouched &&
               S.ppeOnlyStartDateTime &&
               S.ppeOnlyEndDateTime &&
               !ppeOnlyTimesValid()
@@ -2777,14 +2720,7 @@ function render() {
       <div class="card">
         <h2>③ 車輛資料</h2>
         <div class="sub">目前里程會直接從 車輛後勤系統讀取。</div>
-        ${S.bootstrap.cars
-          .filter(x => x.vehicleType === "救護車")
-          .map(x=>`
-          <button class="choice ${S.carPlate===x.plate?"selected":""}" onclick="selectCar('${x.plate}')">
-            <div class="top">${x.plate}${x.callSign ? `｜${esc(x.callSign)}` : ""}</div>
-            <div class="meta">目前里程：${x.mileage}</div>
-          </button>
-        `).join("")}
+        ${ppeCatalog().filter(x=>x.vehicleType==="救護車").map(meta=>{const loaded=S.bootstrap.cars.find(x=>x.plate===meta.plate);if(loaded)return `<button class="choice ${S.carPlate===loaded.plate?"selected":""}" onclick="selectCar('${loaded.plate}')"><div class="top">${esc(loaded.plate)}${loaded.callSign?`｜${esc(loaded.callSign)}`:""}</div><div class="meta">目前里程：${loaded.mileage}</div></button>`;const retrying=!!S.ppeCarRetrying[meta.plate];return `<div class="ppe-rescue-read-error"><div class="top">${esc(meta.plate)}${meta.callSign?`｜${esc(meta.callSign)}`:""}</div><div class="meta">⚠️ 目前里程讀取失敗</div><button type="button" class="ppe-car-retry" ${retrying?"disabled":""} onclick="retryPPECar('${meta.plate}')">${retrying?"重新讀取中…":"重新讀取這台"}</button></div>`;}).join("")}
 
         ${car ? `
           <div class="grid2">
@@ -4191,22 +4127,14 @@ async function loadPPEInBackground(
       );
     }
 
-    S.bootstrap.cars =
-      Array.isArray(ppe.cars)
-        ? ppe.cars
-        : [];
-
-    S.bootstrap.drivers =
-      Array.isArray(ppe.drivers)
-        ? ppe.drivers
-        : [];
-
-    S.bootstrap.ppeReady =
-      true;
-
-    S.drivers =
-      S.bootstrap.drivers;
-
+    S.bootstrap.cars = Array.isArray(ppe.cars) ? ppe.cars : [];
+    S.bootstrap.ppeCatalog = Array.isArray(ppe.ppeCatalog) ? ppe.ppeCatalog : S.bootstrap.cars;
+    S.bootstrap.drivers = Array.isArray(ppe.drivers) ? ppe.drivers : [];
+    S.bootstrap.ppeReady = true;
+    S.drivers = S.bootstrap.drivers;
+    S.ppeCarErrors = Object.assign({}, ppe.carErrors || {});
+    S.ppeGroupLoaded = { ambulance:true, fire:false, other:false };
+    S.ppeGroupLoading = { ambulance:false, fire:false, other:false };
     S.ppeError = "";
 
     if (
