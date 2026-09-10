@@ -1444,7 +1444,7 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.6";
+const FRONTEND_BUILD = "V5.0.7";
 
 const S = {
   step: 1,
@@ -1536,11 +1536,11 @@ async function gs(name, ...args) {
 
   const timeoutMs =
     name === "appGetReturnSubmitStatus"
-      ? 15000
+      ? 20000
       : (
           name === "appSubmitReturnDataFast"
             ? 150000
-            : 70000
+            : 85000
         );
 
   const timer =
