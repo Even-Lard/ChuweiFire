@@ -1,17 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <title>肥貓代打</title>
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f4f6f8">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="肥貓代打">
-  <link rel="manifest" href="./manifest-fatcat-v3.webmanifest">
-  <link rel="icon" href="icon-192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-fatcat-v2.png">
   <style>
     * { box-sizing: border-box; }
     :root {
@@ -275,10 +267,7 @@
 .fatcatImg {
   width: 100%;
   height: 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  visibility: hidden;
+  object-fit: contain;
   filter: drop-shadow(0 8px 3px rgba(0,0,0,.08));
   transform-origin: center;
   animation: fatcatTilt 720ms ease-in-out infinite;
@@ -862,394 +851,12 @@ button.secondary::before {
 }
 
 </style>
-  <meta name="application-name" content="肥貓代打">
-
-<style>
-/* V5.0 PPE Only：刻意與上方救護案件按鈕使用不同視覺，降低誤觸。 */
-.ppe-only-launcher {
-  margin-top: 18px;
-  border: 2px dashed #9a6a22;
-  background: #fff8e8;
-  border-radius: 18px;
-  padding: 16px;
-}
-.ppe-only-launcher h3 {
-  margin: 0 0 6px;
-  font-size: 18px;
-}
-.ppe-only-launcher .sub {
-  margin-bottom: 12px;
-}
-button.ppe-only-open,
-button.ppe-only-submit {
-  width: 100%;
-  border: 0;
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 17px;
-  font-weight: 800;
-  cursor: pointer;
-  background: #8a5a17;
-  color: white;
-}
-button.ppe-only-open:disabled,
-button.ppe-only-submit:disabled {
-  opacity: .45;
-  cursor: not-allowed;
-}
-.ppe-only-panel {
-  margin-top: 16px;
-  border: 2px solid #d7b06a;
-  background: #fffaf0;
-  border-radius: 18px;
-  padding: 16px;
-}
-.ppe-only-vehicle {
-  width: 100%;
-  text-align: left;
-  border: 1px solid #d9c8a5;
-  background: white;
-  border-radius: 14px;
-  padding: 12px;
-  margin: 7px 0;
-  cursor: pointer;
-}
-.ppe-only-vehicle.selected {
-  border: 2px solid #8a5a17;
-  background: #fff1d5;
-}
-.ppe-only-vehicle .top {
-  font-weight: 800;
-}
-.ppe-only-vehicle .meta {
-  margin-top: 4px;
-  font-size: 13px;
-  opacity: .78;
-}
-.ppe-only-result {
-  margin-top: 12px;
-  border-radius: 14px;
-  padding: 12px;
-  background: #eef8ee;
-}
-.ppe-only-divider {
-  height: 1px;
-  background: #e5d6b9;
-  margin: 16px 0;
-}
-</style>
-
-
-<style>
-/* V5.0.1：手機欄位不可橫向撐破畫面 */
-.grid2 > * { min-width: 0; }
-input, select { min-width: 0; max-width: 100%; box-sizing: border-box; }
-input[type="datetime-local"] { font-size: 14px; }
-
-/* PPE Only 改成三分類，不再一次攤開 12 台車 */
-.ppe-only-groups { display: grid; gap: 10px; }
-.ppe-only-group {
-  border: 1px solid #dfc89c;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fff;
-}
-.ppe-only-group summary {
-  list-style: none;
-  cursor: pointer;
-  padding: 13px 14px;
-  font-weight: 800;
-}
-.ppe-only-group summary::-webkit-details-marker { display:none; }
-.ppe-only-group summary::after { content:"＋"; float:right; }
-.ppe-only-group[open] summary::after { content:"－"; }
-.ppe-only-group.ambulance summary { background:#eef7ff; }
-.ppe-only-group.fire summary { background:#fff0ee; }
-.ppe-only-group.other summary { background:#f2f4f5; }
-.ppe-only-group-body { padding: 8px 10px 10px; }
-
-@media (max-width: 560px) {
-  .grid2 { grid-template-columns: 1fr; gap: 0; }
-  input[type="datetime-local"] { width: 100%; }
-}
-</style>
-
-
-<style>
-/* V5.0.2：iPhone Safari 的 datetime-local 有較大的 intrinsic width，
-   這裡強制以 PPE 卡片內容寬度為上限，避免右側超框。 */
-.ppe-only-panel,
-.ppe-only-panel .field,
-.ppe-only-panel .grid2,
-.ppe-only-panel .grid2 > label {
-  min-width: 0 !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-.ppe-only-panel input,
-.ppe-only-panel select {
-  display: block;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
-.ppe-only-panel input[type="datetime-local"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: -webkit-fill-available !important;
-  max-width: -webkit-fill-available !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  font-size: 16px;
-}
-
-@media (max-width: 560px) {
-  .ppe-only-panel .grid2 {
-    display: block !important;
-    width: 100% !important;
-  }
-
-  .ppe-only-panel .grid2 > label {
-    display: block !important;
-    width: 100% !important;
-  }
-
-  .ppe-only-panel input[type="datetime-local"] {
-    width: calc(100% - 2px) !important;
-    max-width: calc(100% - 2px) !important;
-  }
-}
-</style>
-
-
-<style>
-/* V5.0.3：空白的出車時間也要像一顆可點的大欄位 */
-.ppe-only-panel input[type="datetime-local"] {
-  min-height: 58px !important;
-  height: 58px !important;
-  padding: 0 14px !important;
-  border-radius: 12px !important;
-  background: #fff !important;
-  line-height: normal !important;
-}
-
-/* iPhone 空白 datetime-local 原生內容可能幾乎看不見，
-   用父 label 的提示補足「這裡可以點」。 */
-.ppe-only-time-field {
-  position: relative;
-}
-
-.ppe-only-time-field.empty-time::after {
-  content: "點一下選擇時間";
-  position: absolute;
-  left: 15px;
-  bottom: 18px;
-  color: #9aa0a6;
-  pointer-events: none;
-  font-size: 16px;
-}
-
-.ppe-only-time-field.empty-time:focus-within::after {
-  display: none;
-}
-</style>
-
-
-<style>
-/* ===== V5.0.4 PPE-only UI ===== */
-
-/* 分類標題改為真正 accordion button，一次只開一組 */
-.ppe-only-group summary { display:none !important; }
-
-.ppe-only-group-head {
-  width: 100%;
-  min-height: 58px;
-  padding: 12px 16px;
-  border: 0;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font: inherit;
-  font-size: 17px;
-  font-weight: 800;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.ppe-only-group.ambulance .ppe-only-group-head { background:#eef7ff; }
-.ppe-only-group.fire .ppe-only-group-head { background:#fff0ee; }
-.ppe-only-group.other .ppe-only-group-head { background:#f2f4f5; }
-
-.ppe-only-group-symbol {
-  flex: 0 0 auto;
-  font-size: 19px;
-}
-
-/* 已選車固定摘要 */
-.ppe-only-selected-summary {
-  margin-top: 14px;
-  padding: 13px 14px;
-  border: 1.5px solid #9bc9ed;
-  border-radius: 14px;
-  background: #eef7ff;
-}
-
-.ppe-only-selected-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #3979a9;
-  margin-bottom: 4px;
-}
-
-.ppe-only-selected-main {
-  font-size: 18px;
-  line-height: 1.35;
-  font-weight: 850;
-}
-
-.ppe-only-selected-meta {
-  margin-top: 4px;
-  font-size: 13px;
-  opacity: .72;
-}
-
-/* 時間欄位：不要再像一塊大白板 */
-.ppe-only-panel input[type="datetime-local"] {
-  -webkit-appearance: auto !important;
-  appearance: auto !important;
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  height: 52px !important;
-  min-height: 52px !important;
-  padding: 0 12px !important;
-  border-radius: 12px !important;
-  box-sizing: border-box !important;
-  font-size: 16px !important;
-  line-height: 52px !important;
-  text-align: left !important;
-  background: #fff !important;
-}
-
-/* 空白提示位置配合新的 52px 高度 */
-.ppe-only-time-field.empty-time::after {
-  left: 13px !important;
-  bottom: 15px !important;
-  font-size: 15px !important;
-}
-
-/* 完成框 */
-.ppe-only-result {
-  border: 1px solid #b9dfbd;
-  background: #eef9ef;
-  font-weight: 650;
-}
-
-@media (max-width:560px) {
-  .ppe-only-panel input[type="datetime-local"] {
-    height: 50px !important;
-    min-height: 50px !important;
-    line-height: 50px !important;
-  }
-}
-</style>
-
-
-<style>
-/* ===== V5.0.5 iPhone 日期時間框 =====
-   Safari 的 datetime-local 有不可控的原生 intrinsic width。
-   改為「透明原生 input 覆蓋在自訂外觀上」：
-   點擊仍是原生 iPhone 日期選擇器，但畫面尺寸完全由我們控制。 */
-
-.ppe-datetime-shell {
-  position: relative;
-  width: 100%;
-  height: 52px;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #c9d1d8;
-  border-radius: 12px;
-  background: #fff;
-  overflow: hidden;
-}
-
-.ppe-datetime-display {
-  position: absolute;
-  inset: 0 44px 0 0;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  font-size: 16px;
-  line-height: 1;
-  color: #111827;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.ppe-datetime-display.placeholder {
-  color: #9aa0a6;
-}
-
-.ppe-datetime-icon {
-  position: absolute;
-  right: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 16px;
-  pointer-events: none;
-}
-
-.ppe-datetime-native {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  opacity: 0 !important;
-  cursor: pointer !important;
-  z-index: 2 !important;
-  -webkit-appearance: none !important;
-  appearance: none !important;
-}
-
-/* 蓋掉前幾版針對可見 datetime-local 的樣式 */
-.ppe-only-panel input[type="datetime-local"] {
-  min-height: 0 !important;
-  height: 100% !important;
-  line-height: normal !important;
-  background: transparent !important;
-}
-
-@media (max-width: 560px) {
-  .ppe-datetime-shell {
-    height: 50px;
-  }
-}
-</style>
-
-
-<style>
-/* V5.0.6 PPE lazy-load */
-.ppe-group-status{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;opacity:.65}.ppe-group-status.error{color:#b45309;opacity:1}.ppe-only-vehicle-loading,.ppe-only-vehicle-error,.ppe-rescue-read-error{width:100%;box-sizing:border-box;padding:13px 14px;margin-bottom:9px;border:1px solid #d7dce1;border-radius:14px;background:#fff}.ppe-only-vehicle-loading{opacity:.72}.ppe-only-vehicle-error,.ppe-rescue-read-error{border-color:#e8c58b;background:#fffaf0}.ppe-only-vehicle-loading .top,.ppe-only-vehicle-error .top,.ppe-rescue-read-error .top{font-weight:800}.ppe-only-vehicle-loading .meta,.ppe-only-vehicle-error .meta,.ppe-rescue-read-error .meta{margin-top:4px;font-size:13px;opacity:.75}.ppe-car-retry{margin-top:10px;min-height:38px;padding:7px 12px;border:1px solid #d7aa61;border-radius:10px;background:#fff;font-weight:800;font-size:13px;cursor:pointer}.ppe-car-retry:disabled{opacity:.55;cursor:default}
-</style>
 </head>
 <body>
 <div class="wrap">
   <div class="head">
     <h1>🚑 返隊登打</h1>
-    <p id="syncText">正在讀取最新案件…車輛資料會在背景準備</p>
+    <p id="syncText">正在一次讀取案件、車輛與駕駛資料…</p>
   </div>
 
   <div class="steps">
@@ -1269,7 +876,7 @@ input[type="datetime-local"] { font-size: 14px; }
       <div class="fatcatSpeed s2"></div>
       <div class="fatcatSpeed s3"></div>
       <div class="fatcatBounce">
-        <div class="fatcatImg" id="randomCatImg" aria-hidden="true"></div>
+        <img class="fatcatImg" id="randomCatImg" src="" alt="隨機值勤胖貓">
       </div>
     </div>
   </div>
@@ -1404,23 +1011,9 @@ function initRandomLoadingCat() {
     );
 
   if (img) {
-    img.style.visibility = "hidden";
-    img.style.backgroundImage = "none";
+    img.src = cat.image;
+    img.alt = cat.name + "跑步";
 
-    const preloader = new Image();
-
-    preloader.onload = function() {
-      img.style.backgroundImage =
-        'url("' + cat.image + '")';
-      img.style.visibility = "visible";
-    };
-
-    preloader.onerror = function() {
-      img.style.backgroundImage = "none";
-      img.style.visibility = "hidden";
-    };
-
-    preloader.src = cat.image;
   }
 
   if (badge) {
@@ -1444,13 +1037,16 @@ initRandomLoadingCat();
 </script>
 
 <script>
-const FRONTEND_BUILD = "V5.0.7";
+const FRONTEND_BUILD = "V4.8.1";
 
 const S = {
   step: 1,
   bootstrap: null,
   candidate: null,
   sex: "",
+  maleCount: 0,
+  femaleCount: 0,
+  medicalType: "",
   result: "",
   destination: "",
   otherDestination: "",
@@ -1482,148 +1078,16 @@ const S = {
   emsAuthSessionId: "",
 
   officialRunning: false,
-  officialDone: false,
-
-  ppeLoading: false,
-  ppeError: "",
-  ppeCarErrors: {},
-  ppeCarRetrying: {},
-  ppeGroupLoading: { ambulance:false, fire:false, other:false },
-  ppeGroupLoaded: { ambulance:false, fire:false, other:false },
-
-  // V5.0：首頁 PPE 公務用車快速登打
-  ppeOnlyOpen: false,
-  ppeOnlyCarPlate: "",
-  // V5.0.4：三分類一次只展開一個。
-  ppeOnlyOpenGroup: "",
-  ppeOnlyEndMileage: "",
-  ppeOnlyDriverId: "",
-  ppeOnlyDriverName: "",
-  ppeOnlyReason: "",
-  ppeOnlyDestination: "",
-  ppeOnlyStartDateTime: "",
-  ppeOnlyEndDateTime: "",
-  // 返隊時間預設跟著「現在」更新，直到使用者自己改過返隊時間。
-  ppeOnlyEndTouched: false,
-  ppeOnlyRunning: false,
-  ppeOnlyDone: false,
-  ppeOnlyMessage: ""
+  officialDone: false
 };
 
-// =====================================================
-// GitHub Pages → Cloudflare Worker → Apps Script
-// =====================================================
-// Cloudflare Worker 部署完成後，把下面網址改成你的 workers.dev 網址。
-// 例：https://chuwei-return-api.even-lard.workers.dev
-const RETURN_API_URL =
-  "https://nameless-cake-eaa3.a61016123.workers.dev";
-
-async function gs(name, ...args) {
-
-  if (
-    !RETURN_API_URL ||
-    RETURN_API_URL.indexOf(
-      "PASTE_YOUR_"
-    ) === 0
-  ) {
-    throw new Error(
-      "尚未設定 Cloudflare Worker 網址"
-    );
-  }
-
-  const controller =
-    new AbortController();
-
-  const timeoutMs =
-    name === "appGetReturnSubmitStatus"
-      ? 20000
-      : (
-          name === "appSubmitReturnDataFast"
-            ? 150000
-            : 85000
-        );
-
-  const timer =
-    setTimeout(
-      function() {
-        controller.abort();
-      },
-      timeoutMs
-    );
-
-  try {
-
-    const response =
-      await fetch(
-        RETURN_API_URL,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              method: name,
-              args: args
-            }),
-
-          signal:
-            controller.signal
-        }
-      );
-
-    const text =
-      await response.text();
-
-    let payload;
-
-    try {
-      payload =
-        JSON.parse(text);
-    } catch (e) {
-      throw new Error(
-        "後端回傳不是 JSON：" +
-        text.slice(0, 200)
-      );
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        payload.error ||
-        ("HTTP " + response.status)
-      );
-    }
-
-    if (!payload.ok) {
-      throw new Error(
-        payload.error ||
-        "Apps Script 執行失敗"
-      );
-    }
-
-    return payload.result;
-
-  } catch (err) {
-
-    if (
-      err &&
-      err.name ===
-        "AbortError"
-    ) {
-      throw new Error(
-        "後端執行逾時"
-      );
-    }
-
-    throw err;
-
-  } finally {
-    clearTimeout(timer);
-  }
-
+function gs(name, ...args) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(err => reject(new Error(err.message || err)))
+      [name](...args);
+  });
 }
 
 function esc(v) {
@@ -1682,21 +1146,81 @@ function setStep(n) {
 
 function selectCase(i) {
   S.candidate = S.bootstrap.candidates[i];
+
+  // 換案件時清掉上一筆患者資料，避免人數/性別殘留。
+  S.sex = "";
+  S.maleCount = 0;
+  S.femaleCount = 0;
+  S.medicalType = "";
+  S.result = "";
+  S.destination = "";
+  S.otherDestination = "";
+
   if (S.candidate.isNoTransport || S.candidate.reasonText === "空跑") {
-    S.result = "未運送";
-    S.sex = "";
-    S.destination = "";
+    S.result = "未接觸患者";
+  }
+
+  render();
+}
+
+function setPatientSex(value) {
+  S.sex = value;
+
+  if (value === "男") {
+    if (S.maleCount < 1) S.maleCount = 1;
+    S.femaleCount = 0;
+  } else if (value === "女") {
+    S.maleCount = 0;
+    if (S.femaleCount < 1) S.femaleCount = 1;
+  } else if (value === "混合") {
+    if (S.maleCount < 1) S.maleCount = 1;
+    if (S.femaleCount < 1) S.femaleCount = 1;
+  }
+
+  render();
+}
+
+function changePatientCount(which, delta) {
+  if (which === "male") {
+    S.maleCount = Math.max(1, Number(S.maleCount || 1) + delta);
+  } else {
+    S.femaleCount = Math.max(1, Number(S.femaleCount || 1) + delta);
   }
   render();
 }
 
+function patientCountControl(label, which, value) {
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff">
+      <b>${label}患者</b>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button type="button" class="pill" style="min-width:42px;text-align:center" onclick="changePatientCount('${which}',-1)">−</button>
+        <b style="min-width:38px;text-align:center;font-size:18px">${value} 名</b>
+        <button type="button" class="pill" style="min-width:42px;text-align:center" onclick="changePatientCount('${which}',1)">＋</button>
+      </div>
+    </div>
+  `;
+}
+
 function pill(group, value) {
+  if (group === "sex") {
+    setPatientSex(value);
+    return;
+  }
+
   S[group] = value;
 
   if (group === "result") {
     if (value !== "送醫") {
       S.destination = "";
       S.otherDestination = "";
+    }
+
+    if (value === "未接觸患者") {
+      S.sex = "";
+      S.maleCount = 0;
+      S.femaleCount = 0;
+      S.medicalType = "";
     }
 
     // 處置變更後，下一頁的自動地點必須重新計算。
@@ -1721,15 +1245,7 @@ function selectCar(plate) {
 }
 
 function getCar() {
-  const cars =
-    S.bootstrap &&
-    Array.isArray(S.bootstrap.cars)
-      ? S.bootstrap.cars
-      : [];
-
-  return cars.find(
-    x => x.plate === S.carPlate
-  ) || null;
+  return S.bootstrap.cars.find(x => x.plate === S.carPlate) || null;
 }
 
 
@@ -1770,7 +1286,6 @@ function effectiveDestination() {
 
 function updateField(key, value) {
   S[key] = value;
-  refreshNav();
 }
 
 
@@ -1842,700 +1357,25 @@ function scrollToFinalProgress() {
 }
 
 
-function localDateTimeValue(date) {
-  const d = date || new Date();
-  const pad = n => String(n).padStart(2, "0");
-  return (
-    d.getFullYear() + "-" +
-    pad(d.getMonth() + 1) + "-" +
-    pad(d.getDate()) + "T" +
-    pad(d.getHours()) + ":" +
-    pad(d.getMinutes())
-  );
-}
-
-
-function formatPPEOnlyDateTime(value) {
-  if (!value) {
-    return "";
-  }
-
-  const m =
-    String(value).match(
-      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
-    );
-
-  if (!m) {
-    return value;
-  }
-
-  return (
-    m[1] + "/" +
-    m[2] + "/" +
-    m[3] + " " +
-    m[4] + ":" +
-    m[5]
-  );
-}
-
-
-function syncPPEOnlyTimeDisplay(which) {
-  const isStart =
-    which === "start";
-
-  const value =
-    isStart
-      ? S.ppeOnlyStartDateTime
-      : S.ppeOnlyEndDateTime;
-
-  const display =
-    document.getElementById(
-      isStart
-        ? "ppeOnlyStartDisplay"
-        : "ppeOnlyEndDisplay"
-    );
-
-  if (!display) {
-    return;
-  }
-
-  display.textContent =
-    value
-      ? formatPPEOnlyDateTime(value)
-      : "點一下選擇時間";
-
-  display.classList.toggle(
-    "placeholder",
-    !value
-  );
-}
-
-
-function setPPEOnlyDefaultReturnTime() {
-  // 只在「開啟 PPE-only」時預帶一次現在時間。
-  // 不使用 interval、不在日期選擇器開啟時重繪 DOM，
-  // 避免 iPhone Safari picker 被強制關閉。
-  S.ppeOnlyEndDateTime =
-    localDateTimeValue(
-      new Date()
-    );
-}
-
-
-function openPPEOnly() {
-  S.ppeOnlyOpen = !S.ppeOnlyOpen;
-  S.ppeOnlyDone = false;
-  S.ppeOnlyMessage = "";
-
-  if (S.ppeOnlyOpen) {
-    S.ppeOnlyEndTouched = false;
-    setPPEOnlyDefaultReturnTime();
-
-    if (!S.ppeOnlyCarPlate) {
-      S.ppeOnlyOpenGroup = "";
-    }
-  }
-
-  render();
-  refreshNav();
-}
-
-function ppeOnlyVehicleGroup(vehicleType) {
-  if (vehicleType === "救護車") {
-    return "ambulance";
-  }
-
-  if (
-    ["水箱消防車","水庫消防車","化學消防車"]
-      .includes(vehicleType)
-  ) {
-    return "fire";
-  }
-
-  return "other";
-}
-
-
-function ppeCatalog() {
-  return S.bootstrap && Array.isArray(S.bootstrap.ppeCatalog) ? S.bootstrap.ppeCatalog : (S.bootstrap && Array.isArray(S.bootstrap.cars) ? S.bootstrap.cars : []);
-}
-function upsertPPECars(newCars) {
-  if (!S.bootstrap) return;
-  const map = new Map((Array.isArray(S.bootstrap.cars)?S.bootstrap.cars:[]).map(x=>[x.plate,x]));
-  (Array.isArray(newCars)?newCars:[]).forEach(x=>map.set(x.plate,x));
-  S.bootstrap.cars = Array.from(map.values());
-}
-function applyPPECarErrors(errors, plates) {
-  (plates||[]).forEach(p=>delete S.ppeCarErrors[p]);
-  Object.entries(errors||{}).forEach(([p,msg])=>S.ppeCarErrors[p]=String(msg||"讀取失敗"));
-}
-async function loadPPEOnlyGroup(key, force) {
-  if (!["ambulance","fire","other"].includes(key) || S.ppeGroupLoading[key]) return;
-  if (S.ppeGroupLoaded[key] && !force) return;
-  S.ppeGroupLoading[key]=true; render(); refreshNav();
-  try {
-    const result=await gs("appLoadPPEGroup",key);
-    if (!result || result.serverBuild!==FRONTEND_BUILD) throw new Error("PPE 分類資料版本不一致");
-    upsertPPECars(result.cars);
-    const plates=ppeCatalog().filter(x=>ppeOnlyVehicleGroup(x.vehicleType)===key).map(x=>x.plate);
-    applyPPECarErrors(result.errors,plates);
-    S.ppeGroupLoaded[key]=true;
-  } catch(err) {
-    const msg=err&&err.message?err.message:String(err);
-    ppeCatalog().filter(x=>ppeOnlyVehicleGroup(x.vehicleType)===key).forEach(x=>S.ppeCarErrors[x.plate]=msg);
-    S.ppeGroupLoaded[key]=true;
-  } finally { S.ppeGroupLoading[key]=false; render(); refreshNav(); }
-}
-async function retryPPECar(plate) {
-  if (S.ppeCarRetrying[plate]) return;
-  S.ppeCarRetrying[plate]=true; delete S.ppeCarErrors[plate]; render();
-  try {
-    const result=await gs("appLoadPPECar",plate);
-    if (!result || result.serverBuild!==FRONTEND_BUILD || !result.car) throw new Error("單車資料回傳異常");
-    upsertPPECars([result.car]); delete S.ppeCarErrors[plate];
-  } catch(err) { S.ppeCarErrors[plate]=err&&err.message?err.message:String(err); }
-  finally { S.ppeCarRetrying[plate]=false; render(); refreshNav(); }
-}
-function togglePPEOnlyGroup(key) {
-  const car=getPPEOnlyCar();
-  if (car && ppeOnlyVehicleGroup(car.vehicleType)===key && S.ppeOnlyOpenGroup===key) return;
-  const opening=S.ppeOnlyOpenGroup!==key;
-  S.ppeOnlyOpenGroup=opening?key:"";
-  render(); refreshNav();
-  if (opening && !S.ppeGroupLoaded[key]) loadPPEOnlyGroup(key,false);
-}
-
-function selectPPEOnlyCar(plate) {
-  S.ppeOnlyCarPlate = plate;
-  S.ppeOnlyEndMileage = "";
-  S.ppeOnlyDriverId = "";
-  S.ppeOnlyDriverName = "";
-  S.ppeOnlyDone = false;
-  S.ppeOnlyMessage = "";
-
-  const selected =
-    getPPEOnlyCar();
-
-  if (selected) {
-    S.ppeOnlyOpenGroup =
-      ppeOnlyVehicleGroup(
-        selected.vehicleType
-      );
-  }
-
-  render();
-}
-
-
-function getPPEOnlyCar() {
-  const cars =
-    S.bootstrap &&
-    Array.isArray(S.bootstrap.cars)
-      ? S.bootstrap.cars
-      : [];
-
-  return cars.find(
-    x => x.plate === S.ppeOnlyCarPlate
-  ) || null;
-}
-
-
-function ppeOnlyTimesValid() {
-  if (
-    !S.ppeOnlyStartDateTime ||
-    !S.ppeOnlyEndDateTime
-  ) {
-    return false;
-  }
-
-  const start =
-    new Date(
-      S.ppeOnlyStartDateTime
-    ).getTime();
-
-  const end =
-    new Date(
-      S.ppeOnlyEndDateTime
-    ).getTime();
-
-  return (
-    Number.isFinite(start) &&
-    Number.isFinite(end) &&
-    start < end
-  );
-}
-
-
-function onPPEOnlyStartTimeChanged(value) {
-  S.ppeOnlyStartDateTime =
-    value;
-
-  syncPPEOnlyTimeDisplay(
-    "start"
-  );
-
-  // 不 render()：避免 iPhone 日期選擇器被 DOM 重建後關閉。
-  refreshNav();
-  refreshPPEOnlyTimeWarning();
-}
-
-
-function onPPEOnlyEndTimeChanged(value) {
-  S.ppeOnlyEndDateTime =
-    value;
-  S.ppeOnlyEndTouched = true;
-
-  syncPPEOnlyTimeDisplay(
-    "end"
-  );
-
-  // 使用者手動改返隊時間後，正式送出時尊重此時間。
-  refreshNav();
-  refreshPPEOnlyTimeWarning();
-}
-
-
-function refreshPPEOnlyTimeWarning() {
-  const box =
-    document.getElementById(
-      "ppeOnlyTimeWarning"
-    );
-
-  if (!box) {
-    return;
-  }
-
-  const show =
-    !!S.ppeOnlyEndTouched &&
-    !!S.ppeOnlyStartDateTime &&
-    !!S.ppeOnlyEndDateTime &&
-    !ppeOnlyTimesValid();
-
-  box.style.display =
-    show ? "block" : "none";
-}
-
-function ppeOnlyReady() {
-  const car=getPPEOnlyCar();
-  const startTime=S.ppeOnlyStartDateTime?new Date(S.ppeOnlyStartDateTime).getTime():NaN;
-  const effectiveTimeValid=S.ppeOnlyEndTouched?ppeOnlyTimesValid():(Number.isFinite(startTime)&&startTime<Date.now());
-  return !!car && Number.isFinite(Number(S.ppeOnlyEndMileage)) && Number(S.ppeOnlyEndMileage)>=Number(car.mileage) && !!S.ppeOnlyDriverId && !!String(S.ppeOnlyReason||"").trim() && !!String(S.ppeOnlyDestination||"").trim() && effectiveTimeValid;
-}
-async function submitPPEOnly() {
-
-  if (S.ppeOnlyRunning) {
-    return;
-  }
-
-  // 使用者沒有手動調整返隊時間時，真正按下寫入才更新為「此刻」。
-  if (!S.ppeOnlyEndTouched) {
-    S.ppeOnlyEndDateTime =
-      localDateTimeValue(
-        new Date()
-      );
-
-    const endInput =
-      document.getElementById(
-        "ppeOnlyEndDateTime"
-      );
-
-    if (endInput) {
-      endInput.value =
-        S.ppeOnlyEndDateTime;
-    }
-
-    syncPPEOnlyTimeDisplay(
-      "end"
-    );
-  }
-
-  if (!ppeOnlyReady()) {
-    refreshNav();
-    return;
-  }
-
-  const car = getPPEOnlyCar();
-
-  if (!ppeOnlyTimesValid()) {
-    S.ppeOnlyMessage =
-      "❌ 出車時間必須早於返隊時間";
-    refreshPPEOnlyTimeWarning();
-    refreshNav();
-    return;
-  }
-
-  const summary =
-    [
-      "只登打 PPE，其他兩個網站不會寫入。",
-      "",
-      "車輛：" +
-        car.plate +
-        (car.callSign
-          ? "｜" + car.callSign
-          : ""),
-      "車種：" +
-        (car.vehicleType || ""),
-      "里程：" +
-        car.mileage +
-        " → " +
-        S.ppeOnlyEndMileage,
-      "事由：" +
-        S.ppeOnlyReason.trim(),
-      "地點：" +
-        S.ppeOnlyDestination.trim(),
-      "",
-      "確定寫入 PPE？"
-    ].join("\n");
-
-  if (!window.confirm(summary)) {
-    return;
-  }
-
-  S.ppeOnlyRunning = true;
-  S.ppeOnlyDone = false;
-  S.ppeOnlyMessage = "";
-  render();
-
-  try {
-
-    const result =
-      await gs(
-        "appSubmitPPEOnlyStation",
-        {
-          carPlate:
-            S.ppeOnlyCarPlate,
-          endMileage:
-            Number(
-              S.ppeOnlyEndMileage
-            ),
-          driverId:
-            S.ppeOnlyDriverId,
-          driverName:
-            S.ppeOnlyDriverName,
-          reason:
-            String(
-              S.ppeOnlyReason || ""
-            ).trim(),
-          destination:
-            String(
-              S.ppeOnlyDestination || ""
-            ).trim(),
-          startDateTime:
-            S.ppeOnlyStartDateTime,
-          endDateTime:
-            S.ppeOnlyEndDateTime,
-          remarks: ""
-        }
-      );
-
-    if (
-      !result ||
-      result.success !== true ||
-      result.serverBuild !==
-        FRONTEND_BUILD
-    ) {
-      throw new Error(
-        "PPE 寫入回傳異常"
-      );
-    }
-
-    S.ppeOnlyDone = true;
-    S.ppeOnlyMessage =
-      "🐈 " +
-      (result.callSign
-        ? result.callSign + "｜"
-        : "") +
-      result.carPlate +
-      " 已完成！里程 " +
-      result.startMileage +
-      " → " +
-      result.endMileage +
-      "　✨ 胖橘：登打完成";
-
-    // 同步首頁目前里程，避免剛寫完畫面仍顯示舊值。
-    if (car) {
-      car.mileage =
-        Number(
-          result.endMileage
-        );
-    }
-
-  } catch (e) {
-    S.ppeOnlyMessage =
-      "❌ " +
-      (
-        e && e.message
-          ? e.message
-          : String(e)
-      );
-  } finally {
-    S.ppeOnlyRunning = false;
-    render();
-  }
-}
-
-
-function ppeOnlyHtml() {
-
-  const ready =
-    S.bootstrap &&
-    S.bootstrap.ppeReady;
-
-  if (!S.ppeOnlyOpen) {
-    return `
-      <div class="ppe-only-launcher">
-        <h3>🚙 公務用車快速登打</h3>
-        <div class="sub">
-          只登打 PPE 車輛里程，不寫勤務管理、不寫 EMS。
-        </div>
-        <button
-          class="ppe-only-open"
-          ${ready ? "" : "disabled"}
-          onclick="openPPEOnly()">
-          ${
-            ready
-              ? "只登打車輛里程"
-              : "車輛資料背景載入中…"
-          }
-        </button>
-      </div>
-    `;
-  }
-
-  const car =
-    getPPEOnlyCar();
-
-  const cars =
-    Array.isArray(
-      S.bootstrap.cars
-    )
-      ? S.bootstrap.cars
-      : [];
-
-  return `
-    <div class="ppe-only-launcher">
-      <h3>🚙 公務用車｜只登打 PPE</h3>
-      <div class="sub">
-        這一區完全獨立，不會登打勤務管理或 EMS。
-      </div>
-
-      <button
-        class="secondary"
-        style="width:100%;margin-bottom:10px"
-        onclick="openPPEOnly()">
-        收起公務用車登打
-      </button>
-
-      <div class="ppe-only-panel">
-        <label class="field">選擇車輛</label>
-
-        ${(() => {
-          const catalog = ppeCatalog();
-          const groups = [
-            {key:"ambulance",title:"🚑 救護車",cars:catalog.filter(x=>x.vehicleType==="救護車")},
-            {key:"fire",title:"🚒 消防車",cars:catalog.filter(x=>["水箱消防車","水庫消防車","化學消防車"].includes(x.vehicleType))},
-            {key:"other",title:"🚙 其他公務車",cars:catalog.filter(x=>!["救護車","水箱消防車","水庫消防車","化學消防車"].includes(x.vehicleType))}
-          ];
-          const loadedMap=new Map((Array.isArray(S.bootstrap.cars)?S.bootstrap.cars:[]).map(x=>[x.plate,x]));
-          const vehicleRow=meta=>{
-            const loaded=loadedMap.get(meta.plate), error=S.ppeCarErrors[meta.plate], retrying=!!S.ppeCarRetrying[meta.plate];
-            if (loaded) return `<button class="ppe-only-vehicle ${S.ppeOnlyCarPlate===loaded.plate?"selected":""}" onclick="selectPPEOnlyCar('${loaded.plate}')"><div class="top">${esc(loaded.plate)}${loaded.callSign?`｜${esc(loaded.callSign)}`:""}</div><div class="meta">${esc(loaded.vehicleType||"車輛")}｜目前里程：${loaded.mileage}</div></button>`;
-            if (error) return `<div class="ppe-only-vehicle-error"><div class="top">${esc(meta.plate)}${meta.callSign?`｜${esc(meta.callSign)}`:""}</div><div class="meta">${esc(meta.vehicleType||"車輛")}｜⚠️ 目前里程讀取失敗</div><button type="button" class="ppe-car-retry" ${retrying?"disabled":""} onclick="event.stopPropagation();retryPPECar('${meta.plate}')">${retrying?"重新讀取中…":"重新讀取這台"}</button></div>`;
-            return `<div class="ppe-only-vehicle-loading"><div class="top">${esc(meta.plate)}${meta.callSign?`｜${esc(meta.callSign)}`:""}</div><div class="meta">${esc(meta.vehicleType||"車輛")}｜🐾 目前里程讀取中…</div></div>`;
-          };
-          return `<div class="ppe-only-groups">${groups.map(g=>{const selectedHere=g.cars.some(x=>x.plate===S.ppeOnlyCarPlate),isOpen=S.ppeOnlyOpenGroup===g.key||selectedHere,loading=!!S.ppeGroupLoading[g.key],errors=g.cars.filter(x=>!!S.ppeCarErrors[x.plate]).length;return `<div class="ppe-only-group ${g.key} ${isOpen?"open":""}"><button type="button" class="ppe-only-group-head" onclick="togglePPEOnlyGroup('${g.key}')"><span>${g.title}（${g.cars.length}）${loading?`<small class="ppe-group-status">讀取中…</small>`:errors?`<small class="ppe-group-status error">${errors} 台待重讀</small>`:""}</span><span class="ppe-only-group-symbol">${selectedHere?"🔒":isOpen?"－":"＋"}</span></button>${isOpen?`<div class="ppe-only-group-body">${g.cars.map(vehicleRow).join("")}</div>`:""}</div>`;}).join("")}</div>`;
-        })()}
-
-        ${car ? `
-          <div class="ppe-only-selected-summary">
-            <div class="ppe-only-selected-label">目前登打車輛</div>
-            <div class="ppe-only-selected-main">
-              ${
-                car.vehicleType === "救護車"
-                  ? "🚑"
-                  : ppeOnlyVehicleGroup(car.vehicleType) === "fire"
-                    ? "🚒"
-                    : "🚙"
-              }
-              ${car.callSign ? esc(car.callSign) + "｜" : ""}
-              ${esc(car.plate)}
-            </div>
-            <div class="ppe-only-selected-meta">
-              ${esc(car.vehicleType || "車輛")}｜目前里程：${car.mileage}
-            </div>
-          </div>
-
-          <div class="ppe-only-divider"></div>
-
-          <div class="grid2">
-            <label class="field">目前里程
-              <input
-                value="${car.mileage}"
-                disabled>
-            </label>
-
-            <label class="field">返隊里程
-              <input
-                type="number"
-                inputmode="numeric"
-                value="${esc(S.ppeOnlyEndMileage)}"
-                oninput="
-                  S.ppeOnlyEndMileage=this.value;
-                  refreshNav();
-                ">
-            </label>
-          </div>
-
-          <label class="field">駕駛
-            <select onchange="
-              S.ppeOnlyDriverId=this.value;
-              const o=this.options[this.selectedIndex];
-              S.ppeOnlyDriverName=o.dataset.name||'';
-            ">
-              <option value="">
-                ${S.bootstrap.drivers.length
-                  ? "請選擇駕駛"
-                  : "查無竹圍分隊駕駛"}
-              </option>
-              ${S.bootstrap.drivers.map(d => `
-                <option
-                  value="${esc(d.id)}"
-                  data-name="${esc(d.name)}"
-                  ${
-                    S.ppeOnlyDriverId === d.id
-                      ? "selected"
-                      : ""
-                  }>
-                  ${esc(d.name)}
-                </option>
-              `).join("")}
-            </select>
-          </label>
-
-          <div class="grid2">
-            <label class="field">出車時間
-              <div class="ppe-datetime-shell">
-                <div
-                  id="ppeOnlyStartDisplay"
-                  class="ppe-datetime-display ${
-                    S.ppeOnlyStartDateTime ? "" : "placeholder"
-                  }">
-                  ${
-                    S.ppeOnlyStartDateTime
-                      ? esc(formatPPEOnlyDateTime(S.ppeOnlyStartDateTime))
-                      : "點一下選擇時間"
-                  }
-                </div>
-                <span class="ppe-datetime-icon">📅</span>
-                <input
-                  id="ppeOnlyStartDateTime"
-                  class="ppe-datetime-native"
-                  type="datetime-local"
-                  value="${esc(S.ppeOnlyStartDateTime)}"
-                  onchange="onPPEOnlyStartTimeChanged(this.value)"
-                  aria-label="出車時間">
-              </div>
-            </label>
-
-            <label class="field">返隊時間
-              <div class="ppe-datetime-shell">
-                <div
-                  id="ppeOnlyEndDisplay"
-                  class="ppe-datetime-display ${
-                    S.ppeOnlyEndDateTime ? "" : "placeholder"
-                  }">
-                  ${
-                    S.ppeOnlyEndDateTime
-                      ? esc(formatPPEOnlyDateTime(S.ppeOnlyEndDateTime))
-                      : "點一下選擇時間"
-                  }
-                </div>
-                <span class="ppe-datetime-icon">📅</span>
-                <input
-                  id="ppeOnlyEndDateTime"
-                  class="ppe-datetime-native"
-                  type="datetime-local"
-                  value="${esc(S.ppeOnlyEndDateTime)}"
-                  onchange="onPPEOnlyEndTimeChanged(this.value)"
-                  aria-label="返隊時間">
-              </div>
-            </label>
-          </div>
-
-          <div
-            id="ppeOnlyTimeWarning"
-            class="warn"
-            style="margin:0 0 12px;display:${
-              S.ppeOnlyEndTouched &&
-              S.ppeOnlyStartDateTime &&
-              S.ppeOnlyEndDateTime &&
-              !ppeOnlyTimesValid()
-                ? "block"
-                : "none"
-            }">
-            ⚠️ 出車時間必須早於返隊時間
-          </div>
-
-          <label class="field">公務事由
-            <input
-              value="${esc(S.ppeOnlyReason)}"
-              placeholder="例如：公務、送修、補給…"
-              oninput="
-                S.ppeOnlyReason=this.value;
-                refreshNav();
-              ">
-          </label>
-
-          <label class="field">前往地點
-            <input
-              value="${esc(S.ppeOnlyDestination)}"
-              placeholder="請輸入前往地點"
-              oninput="
-                S.ppeOnlyDestination=this.value;
-                refreshNav();
-              ">
-          </label>
-
-          ${
-            S.ppeOnlyMessage
-              ? `<div class="ppe-only-result">
-                  ${esc(S.ppeOnlyMessage)}
-                </div>`
-              : ""
-          }
-
-          <button
-            id="ppeOnlySubmitButton"
-            class="ppe-only-submit"
-            style="margin-top:14px"
-            ${
-              ppeOnlyReady() &&
-              !S.ppeOnlyRunning
-                ? ""
-                : "disabled"
-            }
-            onclick="submitPPEOnly()">
-            ${
-              S.ppeOnlyRunning
-                ? "PPE 寫入中…"
-                : "只寫入車輛里程紀錄"
-            }
-          </button>
-        ` : ""}
-      </div>
-    </div>
-  `;
-}
-
-
 function nextAllowed() {
   if (S.step === 1) return !!S.candidate;
 
   if (S.step === 2) {
     if (S.candidate?.isNoTransport || S.candidate?.reasonText === "空跑") return true;
     if (!S.result) return false;
-    if (S.result === "送醫") return !!S.sex && !!effectiveDestination();
-    return !!S.sex;
+    if (S.result === "未接觸患者") return true;
+
+    const patientReady =
+      !!S.sex &&
+      (
+        (S.sex === "男" && S.maleCount >= 1) ||
+        (S.sex === "女" && S.femaleCount >= 1) ||
+        (S.sex === "混合" && S.maleCount >= 1 && S.femaleCount >= 1)
+      );
+
+    if (!patientReady || !S.medicalType) return false;
+    if (S.result === "送醫") return !!effectiveDestination();
+    return true;
   }
 
   if (S.step === 3) {
@@ -2555,35 +1395,15 @@ function refreshNav() {
       "nav"
     );
 
-  if (nav) {
-    nav.innerHTML =
-      navHtml();
+  if (!nav) {
+    return;
   }
 
-  // V5.0.1：PPE-only 是首頁內嵌功能，不屬於底部「下一步」。
-  // 任一欄位改變都直接同步自己的寫入按鈕，避免填寫順序造成卡住。
-  const ppeOnlyButton =
-    document.getElementById(
-      "ppeOnlySubmitButton"
-    );
-
-  if (ppeOnlyButton) {
-    ppeOnlyButton.disabled =
-      !ppeOnlyReady() ||
-      S.ppeOnlyRunning;
-  }
+  nav.innerHTML =
+    navHtml();
 }
 
 function navHtml() {
-  // PPE-only 是獨立單站流程；打開時隱藏原救護流程的「下一步」，
-  // 避免同一畫面出現兩套動作按鈕造成誤觸。
-  if (
-    S.step === 1 &&
-    S.ppeOnlyOpen
-  ) {
-    return "";
-  }
-
   if (S.step === 1) {
     return `<div class="bottomInner single">
       <button class="primary" ${nextAllowed()?"":"disabled"} onclick="setStep(2)">下一步</button>
@@ -2625,80 +1445,72 @@ function render() {
         <h2>① 選擇本次案件</h2>
         <div class="sub">最近 12 小時最多顯示 3 筆緊急救護＋必要時 1 筆火災。</div>
         ${rows || `<div class="warn">目前沒有找到候選案件。正式版會提供「找不到我的案件」備援流程。</div>`}
-      </div>
-
-      ${ppeOnlyHtml()}`;
+      </div>`;
   }
 
   if (S.step === 2) {
     const c = S.candidate;
-    const noTransport = c.isNoTransport || c.reasonText === "空跑";
+    const noContact =
+      c.isNoTransport ||
+      c.reasonText === "空跑" ||
+      S.result === "未接觸患者";
+
     app.innerHTML = `
       <div class="card">
         <h2>② 患者處理</h2>
         <div class="sub">${esc(shortTime(c.reportTime))}｜${esc(c.reasonText || c.category)}</div>
-        ${noTransport ? `
-          <div class="okBox"><b>空跑案件</b><br>處理情形將自動帶入：未運送</div>
-        ` : `
-          <label class="field">患者性別</label>
-          <div class="radios">
-            <button class="pill ${S.sex==="男"?"on":""}" onclick="pill('sex','男')">男</button>
-            <button class="pill ${S.sex==="女"?"on":""}" onclick="pill('sex','女')">女</button>
-          </div>
 
-          <label class="field">處置</label>
-          <div class="radios">
-            <button class="pill ${S.result==="送醫"?"on":""}" onclick="pill('result','送醫')">送醫</button>
-            <button class="pill ${S.result==="拒送"?"on":""}" onclick="pill('result','拒送')">拒送</button>
-            <button class="pill ${S.result==="未運送"?"on":""}" onclick="pill('result','未運送')">未運送</button>
-          </div>
+        ${
+          c.isNoTransport || c.reasonText === "空跑"
+            ? `<div class="okBox"><b>空跑案件</b><br>處理情形將自動帶入：未接觸患者</div>`
+            : `
+              <label class="field">處置</label>
+              <div class="radios">
+                <button class="pill ${S.result==="送醫"?"on":""}" onclick="pill('result','送醫')">送醫</button>
+                <button class="pill ${S.result==="拒送"?"on":""}" onclick="pill('result','拒送')">拒送</button>
+                <button class="pill ${S.result==="未接觸患者"?"on":""}" onclick="pill('result','未接觸患者')">未接觸患者</button>
+              </div>
 
-          ${S.result==="送醫" ? `
-            <label class="field">送醫院所
-              <select onchange="setDestination(this.value)">
-                <option value="">請選擇</option>
-                ${["長庚","敏盛","部桃","其他"].map(v=>`<option ${S.destination===v?"selected":""}>${v}</option>`).join("")}
-              </select>
-            </label>
-            ${S.destination==="其他" ? `
-              <label class="field">其他院所
-                <input value="${esc(S.otherDestination)}" oninput="setOtherDestination(this.value)">
-              </label>` : ""}
-          ` : ""}
-        `}
+              ${!noContact ? `
+                <label class="field">患者性別</label>
+                <div class="radios">
+                  <button class="pill ${S.sex==="男"?"on":""}" onclick="setPatientSex('男')">男</button>
+                  <button class="pill ${S.sex==="女"?"on":""}" onclick="setPatientSex('女')">女</button>
+                  <button class="pill ${S.sex==="混合"?"on":""}" onclick="setPatientSex('混合')">男女皆有</button>
+                </div>
+
+                ${S.sex==="男" || S.sex==="混合"
+                  ? patientCountControl("男", "male", S.maleCount || 1)
+                  : ""}
+                ${S.sex==="女" || S.sex==="混合"
+                  ? patientCountControl("女", "female", S.femaleCount || 1)
+                  : ""}
+
+                <label class="field">案件類型</label>
+                <div class="radios">
+                  <button class="pill ${S.medicalType==="內科"?"on":""}" onclick="pill('medicalType','內科')">內科</button>
+                  <button class="pill ${S.medicalType==="外科"?"on":""}" onclick="pill('medicalType','外科')">外科</button>
+                </div>
+              ` : ""}
+
+              ${S.result==="送醫" ? `
+                <label class="field">送醫院所
+                  <select onchange="setDestination(this.value)">
+                    <option value="">請選擇</option>
+                    ${["長庚","敏盛","部桃","其他"].map(v=>`<option ${S.destination===v?"selected":""}>${v}</option>`).join("")}
+                  </select>
+                </label>
+                ${S.destination==="其他" ? `
+                  <label class="field">其他院所
+                    <input value="${esc(S.otherDestination)}" oninput="setOtherDestination(this.value)">
+                  </label>` : ""}
+              ` : ""}
+            `
+        }
       </div>`;
   }
 
   if (S.step === 3) {
-
-    if (
-      !S.bootstrap.ppeReady
-    ) {
-      app.innerHTML = `
-        <div class="card">
-          <h2>③ 車輛資料</h2>
-          ${
-            S.ppeError
-              ? `
-                <div class="warn">
-                  車輛資料暫時讀取失敗：${esc(S.ppeError)}
-                </div>
-                <button class="primary"
-                  onclick="retryPPEBootstrap()">
-                  重新讀取車輛資料
-                </button>
-              `
-              : `
-                <div class="okBox">
-                  🐱 車輛里程與駕駛名單正在背景準備中…
-                </div>
-              `
-          }
-        </div>
-      `;
-      return;
-    }
-
     const car = getCar();
     const c = S.candidate;
     const autoDest =
@@ -2720,7 +1532,12 @@ function render() {
       <div class="card">
         <h2>③ 車輛資料</h2>
         <div class="sub">目前里程會直接從 車輛後勤系統讀取。</div>
-        ${ppeCatalog().filter(x=>x.vehicleType==="救護車").map(meta=>{const loaded=S.bootstrap.cars.find(x=>x.plate===meta.plate);if(loaded)return `<button class="choice ${S.carPlate===loaded.plate?"selected":""}" onclick="selectCar('${loaded.plate}')"><div class="top">${esc(loaded.plate)}${loaded.callSign?`｜${esc(loaded.callSign)}`:""}</div><div class="meta">目前里程：${loaded.mileage}</div></button>`;const retrying=!!S.ppeCarRetrying[meta.plate];return `<div class="ppe-rescue-read-error"><div class="top">${esc(meta.plate)}${meta.callSign?`｜${esc(meta.callSign)}`:""}</div><div class="meta">⚠️ 目前里程讀取失敗</div><button type="button" class="ppe-car-retry" ${retrying?"disabled":""} onclick="retryPPECar('${meta.plate}')">${retrying?"重新讀取中…":"重新讀取這台"}</button></div>`;}).join("")}
+        ${S.bootstrap.cars.map(x=>`
+          <button class="choice ${S.carPlate===x.plate?"selected":""}" onclick="selectCar('${x.plate}')">
+            <div class="top">${x.plate}</div>
+            <div class="meta">目前里程：${x.mileage}</div>
+          </button>
+        `).join("")}
 
         ${car ? `
           <div class="grid2">
@@ -2738,7 +1555,7 @@ function render() {
               S.driverId=this.value;
               const o=this.options[this.selectedIndex];
               S.driverName=o.dataset.name||'';
-              refreshNav();
+              render();
             ">
               <option value="">${S.drivers.length ? "請選擇駕駛" : "查無竹圍分隊駕駛"}</option>
               ${S.drivers.map(d=>`<option value="${esc(d.id)}" data-name="${esc(d.name)}" ${S.driverId===d.id?"selected":""}>${esc(d.name)}</option>`).join("")}
@@ -3186,39 +2003,39 @@ async function loginEmsInlineIfNeeded() {
 
 async function submitReturnData() {
 
-  if (S.officialRunning) {
+  if (
+    S.officialRunning
+  ) {
     return;
   }
 
-  if (!S.tabletClosed) {
+  if (
+    !S.tabletClosed
+  ) {
     alert(
       "請先勾選「我已確認救護平板完成結案」"
     );
     return;
   }
 
-  S.officialRunning = true;
+  S.officialRunning =
+    true;
+
   refreshNav();
   scrollToFinalProgress();
 
   try {
 
-    const completed = {
-      duty:
-        S.stationTest.duty ===
-        "success",
-      ppe:
-        S.stationTest.ppe ===
-        "success",
-      ems:
-        S.stationTest.ems ===
-        "success"
-    };
-
+    // V4.8：
+    // 先把 EMS 驗證碼與 token 留在本次送出流程中。
+    // 最後 EMS 站會用「單一 server call」完成登入 + 寫入，
+    // 不再先登入一次、之後另一個 call 再拿 Session。
     let emsTokenForSubmit = "";
     let emsCodeForSubmit = "";
 
-    if (!completed.ems) {
+    if (
+      S.stationTest.ems !== "success"
+    ) {
 
       if (
         !S.emsCaptchaToken ||
@@ -3253,186 +2070,161 @@ async function submitReturnData() {
         S.emsCaptchaToken;
     }
 
-    // 先把尚未完成的站別標成執行中。
-    ["duty","ppe","ems"].forEach(
-      function(key) {
-        if (!completed[key]) {
-          S.stationTest[key] =
-            "running";
-          S.stationMessage[key] =
-            "";
-        }
+    const flow = [
+      {
+        key:
+          "duty",
+        api:
+          "appSubmitDutyStation"
+      },
+      {
+        key:
+          "ppe",
+        api:
+          "appSubmitPPEStation"
+      },
+      {
+        key:
+          "ems",
+        api:
+          "appSubmitEMSStation"
       }
-    );
+    ];
 
-    renderFinalProgress();
-    scrollToFinalProgress();
-
-    const requestId =
-      makeReturnRequestId();
-
-    let batch;
-
-    try {
-
-      batch =
-        await gs(
-          "appSubmitReturnDataFast",
-          currentWorkflowData(),
-          emsTokenForSubmit,
-          emsCodeForSubmit,
-          completed,
-          requestId
-        );
-
-    } catch (transportErr) {
-
-      batch =
-        await recoverReturnSubmit(
-          requestId
-        );
-
-      if (!batch) {
-        throw new Error(
-          "後端回傳中斷，目前無法確認最後結果。\n" +
-          "請先不要再次送出，稍後查看 EMS / 勤務紀錄後再操作。\n\n" +
-          (transportErr.message || String(transportErr))
-        );
-      }
-    }
-
-    const stations =
-      batch && batch.stations
-        ? batch.stations
-        : {};
-
-    ["duty","ppe","ems"].forEach(
-      function(key) {
-
-        const item =
-          stations[key];
-
-        if (
-          item &&
-          item.success === true
-        ) {
-          S.stationTest[key] =
-            "success";
-
-          S.stationMessage[key] =
-            item.message ||
-            "完成";
-        }
-      }
-    );
-
-    const ppeResult =
-      stations.ppe;
-
-    if (
-      ppeResult &&
-      ppeResult.verifiedMileage !==
-        undefined
+    for (
+      const station of flow
     ) {
-      const car = getCar();
-
-      if (car) {
-        car.mileage =
-          Number(
-            ppeResult.verifiedMileage
-          );
-      }
-    }
-
-    const emsResult =
-      stations.ems;
-
-    if (
-      emsResult &&
-      emsResult.emsAuthSessionId
-    ) {
-      S.emsAuthSessionId =
-        emsResult.emsAuthSessionId;
-
-      if (S.bootstrap) {
-        S.bootstrap.emsSessionActive =
-          true;
-      }
-
-      S.emsCaptchaToken = "";
-      S.emsCaptchaImage = "";
-    }
-
-    // 批次內若有站別失敗，前面成功站已經被記住。
-    if (
-      !batch ||
-      batch.success !== true
-    ) {
-
-      const failed =
-        batch &&
-        batch.failedStation
-          ? batch.failedStation
-          : "";
 
       if (
-        failed &&
-        S.stationTest[failed] !==
-          "success"
+        S.stationTest[
+          station.key
+        ] === "success"
       ) {
-        S.stationTest[failed] =
-          "error";
-
-        S.stationMessage[failed] =
-          batch.error ||
-          "執行失敗";
+        continue;
       }
 
-      // 尚未實際執行到的後續站別恢復 pending。
-      ["duty","ppe","ems"].forEach(
-        function(key) {
-          if (
-            S.stationTest[key] ===
-            "running"
-          ) {
-            S.stationTest[key] =
-              "pending";
-          }
-        }
-      );
+      S.stationTest[
+        station.key
+      ] =
+        "running";
 
-      if (failed === "ems") {
-
-        if (S.bootstrap) {
-          S.bootstrap.emsSessionActive =
-            false;
-        }
-
-        S.emsCaptchaToken = "";
-        S.emsCaptchaImage = "";
-        S.emsAuthSessionId = "";
-
-        renderFinalEmsBox();
-
-        setTimeout(
-          function() {
-            ensureFinalEmsCaptcha();
-          },
-          50
-        );
-      }
+      S.stationMessage[
+        station.key
+      ] =
+        "";
 
       renderFinalProgress();
       scrollToFinalProgress();
 
-      throw new Error(
-        batch && batch.error
-          ? batch.error
-          : "返隊資料填寫失敗"
-      );
+      try {
+
+        const result =
+          station.key === "ems"
+            ? await gs(
+                "appLoginAndSubmitEMSStation",
+                currentWorkflowData(),
+                emsTokenForSubmit,
+                emsCodeForSubmit
+              )
+            : await gs(
+                station.api,
+                currentWorkflowData()
+              );
+
+        if (
+          station.key === "ems" &&
+          result.emsAuthSessionId
+        ) {
+          S.emsAuthSessionId =
+            result.emsAuthSessionId;
+
+          if (S.bootstrap) {
+            S.bootstrap.emsSessionActive =
+              true;
+          }
+
+          S.emsCaptchaToken = "";
+          S.emsCaptchaImage = "";
+        }
+
+        S.stationTest[
+          station.key
+        ] =
+          "success";
+
+        S.stationMessage[
+          station.key
+        ] =
+          result.message ||
+          "完成";
+
+        if (
+          station.key === "ppe" &&
+          result.verifiedMileage !== undefined
+        ) {
+          const car =
+            getCar();
+
+          if (car) {
+            car.mileage =
+              Number(
+                result.verifiedMileage
+              );
+          }
+        }
+
+        renderFinalProgress();
+        scrollToFinalProgress();
+
+      } catch (e) {
+
+        S.stationTest[
+          station.key
+        ] =
+          "error";
+
+        S.stationMessage[
+          station.key
+        ] =
+          e.message ||
+          String(e);
+
+        // EMS 若因 Session 過期 / 無效而失敗，
+        // 立刻把前端標記改回未驗證，並重新準備驗證碼。
+        // 下一次按「填寫返隊資料」時，已成功的勤務/車輛站會自動跳過，
+        // 只續跑 EMS，不會重複寫前兩站。
+        if (
+          station.key === "ems"
+        ) {
+          if (S.bootstrap) {
+            S.bootstrap.emsSessionActive = false;
+          }
+
+          S.emsCaptchaToken = "";
+          S.emsCaptchaImage = "";
+          S.emsAuthSessionId = "";
+
+          renderFinalEmsBox();
+
+          setTimeout(
+            function() {
+              ensureFinalEmsCaptcha();
+            },
+            50
+          );
+        }
+
+        renderFinalProgress();
+        scrollToFinalProgress();
+
+        throw e;
+      }
+
     }
 
-    S.officialDone = true;
+    S.officialDone =
+      true;
+
     renderFinalProgress();
     refreshNav();
 
@@ -3465,10 +2257,15 @@ async function submitReturnData() {
 
   } finally {
 
-    S.officialRunning = false;
+    S.officialRunning =
+      false;
+
     refreshNav();
+
   }
+
 }
+
 
 
 function restartReturnWorkflow() {
@@ -3524,6 +2321,15 @@ function currentWorkflowData() {
 
     sex:
       S.sex,
+
+    maleCount:
+      Number(S.maleCount || 0),
+
+    femaleCount:
+      Number(S.femaleCount || 0),
+
+    medicalType:
+      S.medicalType,
 
     result:
       S.result,
@@ -4097,176 +2903,6 @@ async function buildPreview() {
 }
 
 
-async function loadPPEInBackground(
-  promise
-) {
-
-  if (!S.bootstrap) {
-    return;
-  }
-
-  S.ppeLoading = true;
-  S.ppeError = "";
-
-  try {
-
-    const ppe =
-      promise
-        ? await promise
-        : await gs(
-            "appBootstrapPPE"
-          );
-
-    if (
-      !ppe ||
-      ppe.serverBuild !==
-        FRONTEND_BUILD
-    ) {
-      throw new Error(
-        "PPE 背景資料版本不一致"
-      );
-    }
-
-    S.bootstrap.cars = Array.isArray(ppe.cars) ? ppe.cars : [];
-    S.bootstrap.ppeCatalog = Array.isArray(ppe.ppeCatalog) ? ppe.ppeCatalog : S.bootstrap.cars;
-    S.bootstrap.drivers = Array.isArray(ppe.drivers) ? ppe.drivers : [];
-    S.bootstrap.ppeReady = true;
-    S.drivers = S.bootstrap.drivers;
-    S.ppeCarErrors = Object.assign({}, ppe.carErrors || {});
-    S.ppeGroupLoaded = { ambulance:true, fire:false, other:false };
-    S.ppeGroupLoading = { ambulance:false, fire:false, other:false };
-    S.ppeError = "";
-
-    if (
-      S.step === 1 ||
-      S.step === 3
-    ) {
-      render();
-      refreshNav();
-    }
-
-  } catch (err) {
-
-    S.bootstrap.ppeReady =
-      false;
-
-    S.ppeError =
-      err && err.message
-        ? err.message
-        : String(err);
-
-    if (S.step === 3) {
-      render();
-      refreshNav();
-    }
-
-  } finally {
-    S.ppeLoading = false;
-  }
-}
-
-
-async function retryPPEBootstrap() {
-
-  if (S.ppeLoading) {
-    return;
-  }
-
-  S.ppeError = "";
-  render();
-
-  await loadPPEInBackground();
-}
-
-
-function makeReturnRequestId() {
-
-  if (
-    window.crypto &&
-    typeof window.crypto.randomUUID ===
-      "function"
-  ) {
-    return (
-      "r_" +
-      window.crypto.randomUUID()
-        .replace(/-/g, "")
-    );
-  }
-
-  return (
-    "r_" +
-    Date.now().toString(36) +
-    "_" +
-    Math.random()
-      .toString(36)
-      .slice(2)
-  );
-}
-
-
-function sleepMs(ms) {
-  return new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        ms
-      )
-  );
-}
-
-
-async function recoverReturnSubmit(
-  requestId
-) {
-
-  let lastResult = null;
-
-  for (
-    let i = 0;
-    i < 8;
-    i++
-  ) {
-
-    await sleepMs(
-      i === 0
-        ? 350
-        : 1500
-    );
-
-    try {
-
-      const status =
-        await gs(
-          "appGetReturnSubmitStatus",
-          requestId
-        );
-
-      if (
-        status &&
-        status.found &&
-        status.result
-      ) {
-
-        lastResult =
-          status.result;
-
-        if (
-          status.phase ===
-            "success" ||
-          status.phase ===
-            "failed"
-        ) {
-          return lastResult;
-        }
-      }
-
-    } catch (err) {}
-  }
-
-  return lastResult;
-}
-
-
 let bootstrapWatchdog = null;
 
 function armBootstrapWatchdog() {
@@ -4293,7 +2929,7 @@ function armBootstrapWatchdog() {
           app.innerHTML = `
             <div class="card">
               <div class="warn">
-                案件讀取時間較久，勤務系統可能暫時沒有回應。
+                資料讀取時間較久，可能是外部系統暫時沒有回應。
               </div>
 
               <button class="primary"
@@ -4321,20 +2957,10 @@ let isFirstPageBootstrap = true;
 
 async function start() {
   try {
+    S.bootstrap = await gs("appBootstrap");
 
-    const dutyPromise =
-      gs(
-        "appBootstrapFast"
-      );
-
-    const ppePromise =
-      gs(
-        "appBootstrapPPE"
-      );
-
-    S.bootstrap =
-      await dutyPromise;
-
+    // V4.8：直接驗證「目前瀏覽器 HTML」與「部署中的 Code.gs」
+    // 是否真的是同一版，避免管理部署沒有更新成功卻誤以為新程式壞掉。
     if (
       !S.bootstrap.serverBuild ||
       S.bootstrap.serverBuild !== FRONTEND_BUILD
@@ -4348,6 +2974,12 @@ async function start() {
       );
     }
 
+    // 真正重新開啟 / 重新整理網頁時：
+    // 即使 Apps Script UserCache 裡還留著舊 EMS Cookie，
+    // 這一頁也一律要求重新輸入一次驗證碼。
+    //
+    // 但同一頁按「再次填寫」時 isFirstPageBootstrap 已經是 false，
+    // 可以沿用剛剛成功登入的 EMS Session，避免每筆都重輸驗證碼。
     if (isFirstPageBootstrap) {
       S.bootstrap.emsSessionActive = false;
       S.emsCaptchaToken = "";
@@ -4355,34 +2987,24 @@ async function start() {
       S.emsAuthSessionId = "";
       isFirstPageBootstrap = false;
     } else if (S.emsAuthSessionId) {
+      // 同一頁按「再次填寫」時沿用剛剛成功的 EMS 登入 Session。
       S.bootstrap.emsSessionActive = true;
     }
 
     clearTimeout(
       bootstrapWatchdog
     );
-
-    S.drivers = [];
-
-    document.getElementById(
-      "syncText"
-    ).textContent =
-      "案件更新：" +
+    S.drivers = S.bootstrap.drivers || [];
+    document.getElementById("syncText").textContent =
+      "資料更新：" +
       S.bootstrap.generatedAt +
       " ｜ " +
       FRONTEND_BUILD;
-
     render();
-    refreshNav();
-
-    loadPPEInBackground(
-      ppePromise
-    );
 
     if (S.step === 4) {
       ensureFinalEmsCaptcha();
     }
-
   } catch (e) {
 
     clearTimeout(
@@ -4391,7 +3013,6 @@ async function start() {
 
     document.getElementById("app").innerHTML =
       `<div class="card"><div class="warn">載入失敗：${esc(e.message)}</div></div>`;
-
     document.getElementById("nav").innerHTML =
       `<div class="bottomInner single"><button class="primary" onclick="location.reload()">重新載入</button></div>`;
   }
@@ -4399,14 +3020,5 @@ async function start() {
 
 start();
 </script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
-</script>
-
 </body>
 </html>
