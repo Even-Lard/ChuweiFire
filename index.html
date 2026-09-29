@@ -38,7 +38,7 @@
       max-width: 680px;
       margin: 0 auto;
       /* V5.2.1 UI：預留值班喵小卡 + 固定導覽列空間，避免蓋住里程/輸入欄位 */
-      padding: 14px 14px 214px;
+      padding: 14px 14px 238px;
     }
     .head {
       padding: 16px 2px 10px;
@@ -490,489 +490,180 @@ button.secondary::before {
 }
 
 /* =====================================================
-   V5.2.1 UI：本次值班喵全站陪伴小卡
-   - 資料讀取完成後第一次出現：小彈出 + 一次性微型慶祝
-   - 後續切頁不重播
-   - 右下小卡，不遮里程輸入；wrap 已預留底部滾動空間
+   V5.2.1 UI Rev3：自由值班喵
    ===================================================== */
 .bottomCompanion {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(100% + 7px);
+  bottom: calc(100% + 6px);
   width: min(680px, calc(100% - 28px));
-  height: 96px;
+  height: 138px;
   pointer-events: none;
   z-index: 20;
   visibility: hidden;
 }
-
-.bottomCompanion.is-visible {
-  visibility: visible;
-}
+.bottomCompanion.is-visible { visibility: visible; }
 
 .dutyCatMiniCard {
   position: absolute;
-  right: 2px;
+  right: 6px;
   bottom: 0;
-  width: 286px;
-  height: 88px;
-  box-sizing: border-box;
+  width: 270px;
+  height: 132px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 7px 14px 7px 8px;
-  border: 2px solid #9aaab8;
-  border-radius: 18px;
-  background: rgba(255,255,255,.96);
-  box-shadow: 0 7px 18px rgba(24,33,43,.12);
-  opacity: .97;
+  justify-content: flex-end;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible;
 }
-
 .dutyCatMiniCard.intro-pop {
   animation: dutyCatMiniPop 720ms cubic-bezier(.18,.9,.28,1.22) both;
 }
-
 .dutyCatMiniImageWrap {
-  flex: 0 0 92px;
-  width: 92px;
-  height: 74px;
+  width: 188px;
+  height: 95px;
   display: grid;
-  place-items: center;
-  overflow: hidden;
+  place-items: end center;
+  overflow: visible;
+  margin-bottom: -8px;
 }
-
 .dutyCatMiniImage {
   display: block;
-  width: 92px;
-  height: 74px;
+  width: 188px;
+  height: 112px;
   object-fit: contain;
-  filter: drop-shadow(0 3px 3px rgba(0,0,0,.10));
+  filter: drop-shadow(0 7px 7px rgba(0,0,0,.13));
 }
-
-.dutyCatMiniInfo {
-  min-width: 0;
-  line-height: 1.08;
-}
-
-.dutyCatMiniCaption {
-  color: #82909c;
-  font-size: 12px;
-  font-weight: 800;
-  margin-bottom: 6px;
-  white-space: nowrap;
-}
+.dutyCatMiniInfo { min-width: 0; }
+.dutyCatMiniCaption { display: none !important; }
 
 .dutyCatMiniLine {
+  min-width: 206px;
+  min-height: 39px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 5px;
-  min-width: 0;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 4px solid #8ea4b6;
+  border-radius: 999px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 5px 14px rgba(24,33,43,.11);
 }
-
 .dutyCatMiniRarity {
   flex: 0 0 auto;
-  min-width: 36px;
-  padding: 4px 7px;
+  min-width: 34px;
+  padding: 3px 7px;
   border-radius: 999px;
   text-align: center;
   font-size: 12px;
   font-weight: 950;
   letter-spacing: .03em;
-  background: #eef3f6;
-  color: #526575;
-}
-
-.dutyCatMiniName {
-  min-width: 0;
-  overflow: visible;
-  text-overflow: clip;
-  white-space: nowrap;
-  color: #18212b;
-  font-size: 18px;
-  font-weight: 900;
-}
-
-/* 稀有度外框：開場 badge 與後續小卡共用視覺語言 */
-.catDutyBadge.rarity-r,
-.dutyCatMiniCard.rarity-r {
-  border-color: #8ea4b6;
-  box-shadow: 0 5px 16px rgba(86,111,130,.14);
-}
-.catDutyBadge.rarity-r .dutyCatMiniRarity,
-.dutyCatMiniCard.rarity-r .dutyCatMiniRarity {
   background: #e9f0f4;
   color: #526b7e;
 }
-
-.catDutyBadge.rarity-s,
-.dutyCatMiniCard.rarity-s {
+.dutyCatMiniName {
+  color: #18212b;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 950;
+  white-space: nowrap;
+}
+.dutyCatMiniCard.rarity-r .dutyCatMiniLine { border-color: #8ea4b6; }
+.dutyCatMiniCard.rarity-s .dutyCatMiniLine {
   border-color: #d7ac45;
-  box-shadow: 0 5px 18px rgba(215,172,69,.22);
+  box-shadow: 0 5px 15px rgba(215,172,69,.23);
 }
-.catDutyBadge.rarity-s .dutyCatMiniRarity,
-.dutyCatMiniCard.rarity-s .dutyCatMiniRarity {
-  background: #fff4ce;
-  color: #9b6810;
-}
-
-.catDutyBadge.rarity-ss,
-.dutyCatMiniCard.rarity-ss {
+.dutyCatMiniCard.rarity-ss .dutyCatMiniLine {
   border-color: #9d72df;
-  box-shadow: 0 5px 19px rgba(130,80,210,.23);
+  box-shadow: 0 5px 16px rgba(130,80,210,.24);
 }
-.catDutyBadge.rarity-ss .dutyCatMiniRarity,
-.dutyCatMiniCard.rarity-ss .dutyCatMiniRarity {
-  background: #f0e7ff;
-  color: #7341bf;
-}
-
-.catDutyBadge.rarity-ssr,
-.dutyCatMiniCard.rarity-ssr {
-  border: 2px solid transparent;
+.dutyCatMiniCard.rarity-ssr .dutyCatMiniLine {
+  border: 4px solid transparent;
   background:
-    linear-gradient(rgba(255,255,255,.96), rgba(255,255,255,.96)) padding-box,
+    linear-gradient(rgba(255,255,255,.97), rgba(255,255,255,.97)) padding-box,
     linear-gradient(120deg,#f1c453,#e99bcf,#8eabff,#7fd9c8,#f1c453) border-box;
-  box-shadow:
-    0 5px 18px rgba(235,173,80,.17),
-    0 0 15px rgba(151,125,235,.18);
+  box-shadow: 0 5px 16px rgba(235,173,80,.18), 0 0 16px rgba(151,125,235,.20);
 }
-.catDutyBadge.rarity-ssr .dutyCatMiniRarity,
-.dutyCatMiniCard.rarity-ssr .dutyCatMiniRarity {
-  background: linear-gradient(120deg,#fff2bd,#f3e2ff,#dff2ff);
-  color: #825d2a;
-}
-
-/* 開場機率 badge 原本整體不變，只補稀有度邊框 */
 .catDutyBadge {
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   transition: border-color .2s ease, box-shadow .2s ease;
 }
-
-/* 小煙火 / sparkle：只在第一次正式出現時產生 */
+.catDutyBadge.rarity-r { border-color: #8ea4b6; }
+.catDutyBadge.rarity-s { border-color: #d7ac45; box-shadow: 0 4px 14px rgba(215,172,69,.20); }
+.catDutyBadge.rarity-ss { border-color: #9d72df; box-shadow: 0 4px 15px rgba(130,80,210,.22); }
+.catDutyBadge.rarity-ssr {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#eef8fc,#eef8fc) padding-box,
+    linear-gradient(120deg,#f1c453,#e99bcf,#8eabff,#7fd9c8,#f1c453) border-box;
+  box-shadow: 0 0 14px rgba(151,125,235,.18);
+}
 .dutyCatMiniFx {
   position: absolute;
-  right: 0;
-  bottom: 5px;
-  width: 292px;
-  height: 104px;
+  right: 12px;
+  bottom: 42px;
+  width: 270px;
+  height: 100px;
   overflow: visible;
 }
-
 .dutyCatMiniSpark {
   position: absolute;
-  right: 34px;
-  top: 25px;
+  right: 48px;
+  top: 28px;
   width: 5px;
   height: 5px;
   border-radius: 50%;
   opacity: 0;
   background: #ffd257;
   box-shadow:
-    0 -16px 0 #ffd257,
-    14px -8px 0 #ff9cae,
-    15px 8px 0 #87c9ff,
-    0 16px 0 #9be0be,
-    -14px 8px 0 #c7a0ff,
-    -14px -8px 0 #ffbb72;
+    0 -18px 0 #ffd257,
+    16px -9px 0 #ff9cae,
+    17px 9px 0 #87c9ff,
+    0 18px 0 #9be0be,
+    -16px 9px 0 #c7a0ff,
+    -16px -9px 0 #ffbb72;
   animation: dutyCatSpark 780ms ease-out var(--spark-delay,0ms) both;
 }
-
-.dutyCatMiniSpark:nth-child(2) {
-  right: 117px;
-  top: 18px;
-  transform: scale(.72);
-}
-
-.dutyCatMiniSpark:nth-child(3) {
-  right: 78px;
-  top: 3px;
-  transform: scale(.58);
-}
+.dutyCatMiniSpark:nth-child(2) { right: 168px; top: 18px; transform: scale(.78); }
+.dutyCatMiniSpark:nth-child(3) { right: 108px; top: 3px; transform: scale(.62); }
 
 @keyframes dutyCatMiniPop {
-  0%   { opacity: 0; transform: translateY(8px) scale(.86); }
-  58%  { opacity: 1; transform: translateY(-2px) scale(1.035); }
+  0% { opacity: 0; transform: translateY(9px) scale(.84); }
+  58% { opacity: 1; transform: translateY(-3px) scale(1.04); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
-
 @keyframes dutyCatSpark {
-  0%   { opacity: 0; transform: scale(.12); }
-  20%  { opacity: 1; transform: scale(1.05); }
-  72%  { opacity: .9; transform: scale(.92); }
+  0% { opacity: 0; transform: scale(.12); }
+  20% { opacity: 1; transform: scale(1.05); }
+  72% { opacity: .9; transform: scale(.92); }
   100% { opacity: 0; transform: scale(1.35); }
 }
-
 @media (max-width: 520px) {
-  .wrap {
-    padding-bottom: 190px;
+  .wrap { padding-bottom: 215px; }
+  .bottomCompanion { height: 112px; bottom: calc(100% + 5px); }
+  .dutyCatMiniCard { right: 2px; width: 224px; height: 108px; }
+  .dutyCatMiniImageWrap { width: 148px; height: 77px; margin-bottom: -7px; }
+  .dutyCatMiniImage { width: 148px; height: 91px; }
+  .dutyCatMiniLine {
+    min-width: 184px;
+    min-height: 34px;
+    gap: 6px;
+    padding: 5px 10px;
+    border-width: 3px;
   }
-
-  .bottomCompanion {
-    height: 80px;
-    bottom: calc(100% + 6px);
-  }
-
-  .dutyCatMiniCard {
-    width: min(238px, calc(100vw - 34px));
-    height: 72px;
-    border-radius: 19px;
-    gap: 9px;
-    padding: 5px 10px 5px 6px;
-  }
-
-  .dutyCatMiniImageWrap,
-  .dutyCatMiniImage {
-    width: 70px;
-    height: 60px;
-  }
-
-  .dutyCatMiniCaption {
-    font-size: 10px;
-    margin-bottom: 4px;
-  }
-
-  .dutyCatMiniRarity {
-    min-width: 30px;
-    padding: 3px 5px;
-    font-size: 10px;
-  }
-
-  .dutyCatMiniName {
-    font-size: 15px;
-    white-space: nowrap;
-    overflow: visible;
-  }
-
-  .dutyCatMiniFx {
-    width: 246px;
-    height: 86px;
-  }
+  .dutyCatMiniCard.rarity-ssr .dutyCatMiniLine { border-width: 3px; }
+  .dutyCatMiniRarity { min-width: 30px; padding: 3px 5px; font-size: 10px; }
+  .dutyCatMiniName { font-size: 15px; }
+  .dutyCatMiniFx { width: 226px; height: 88px; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .dutyCatMiniCard.intro-pop,
-  .dutyCatMiniSpark {
-    animation-duration: 1ms !important;
-  }
-}
-
-
-/* =====================================================
-   V4.8 小型菱形工作中動畫
-   由使用者提供的 breeding-rhombus-spinner 概念縮小並配色
-   開場仍保留四隻胖貓；這顆只負責流程中的小型讀取/寫入提示。
-   ===================================================== */
-.mini-rhombus-spinner {
-  --rh-size: 34px;
-  height: var(--rh-size);
-  width: var(--rh-size);
-  position: relative;
-  transform: rotate(45deg);
-  display: inline-block;
-  flex: 0 0 auto;
-}
-
-.mini-rhombus-spinner,
-.mini-rhombus-spinner * {
-  box-sizing: border-box;
-}
-
-.mini-rhombus-spinner .rhombus {
-  height: calc(var(--rh-size) / 7.5);
-  width: calc(var(--rh-size) / 7.5);
-  animation-duration: 2000ms;
-  top: calc(var(--rh-size) / 2.3077);
-  left: calc(var(--rh-size) / 2.3077);
-  background-color: var(--primary);
-  position: absolute;
-  animation-iteration-count: infinite;
-}
-
-.mini-rhombus-spinner .rhombus.child-1 {
-  animation-name: mini-rhombus-child-1;
-  animation-delay: 100ms;
-}
-.mini-rhombus-spinner .rhombus.child-2 {
-  animation-name: mini-rhombus-child-2;
-  animation-delay: 200ms;
-}
-.mini-rhombus-spinner .rhombus.child-3 {
-  animation-name: mini-rhombus-child-3;
-  animation-delay: 300ms;
-}
-.mini-rhombus-spinner .rhombus.child-4 {
-  animation-name: mini-rhombus-child-4;
-  animation-delay: 400ms;
-}
-.mini-rhombus-spinner .rhombus.child-5 {
-  animation-name: mini-rhombus-child-5;
-  animation-delay: 500ms;
-}
-.mini-rhombus-spinner .rhombus.child-6 {
-  animation-name: mini-rhombus-child-6;
-  animation-delay: 600ms;
-}
-.mini-rhombus-spinner .rhombus.child-7 {
-  animation-name: mini-rhombus-child-7;
-  animation-delay: 700ms;
-}
-.mini-rhombus-spinner .rhombus.child-8 {
-  animation-name: mini-rhombus-child-8;
-  animation-delay: 800ms;
-}
-
-.mini-rhombus-spinner .rhombus.big {
-  height: calc(var(--rh-size) / 3);
-  width: calc(var(--rh-size) / 3);
-  top: calc(var(--rh-size) / 3);
-  left: calc(var(--rh-size) / 3);
-  background-color: var(--primary);
-  animation: mini-rhombus-big 2s infinite;
-  animation-delay: .5s;
-}
-
-@keyframes mini-rhombus-child-1 {
-  50% { transform: translate(-325%, -325%); }
-}
-@keyframes mini-rhombus-child-2 {
-  50% { transform: translate(0, -325%); }
-}
-@keyframes mini-rhombus-child-3 {
-  50% { transform: translate(325%, -325%); }
-}
-@keyframes mini-rhombus-child-4 {
-  50% { transform: translate(325%, 0); }
-}
-@keyframes mini-rhombus-child-5 {
-  50% { transform: translate(325%, 325%); }
-}
-@keyframes mini-rhombus-child-6 {
-  50% { transform: translate(0, 325%); }
-}
-@keyframes mini-rhombus-child-7 {
-  50% { transform: translate(-325%, 325%); }
-}
-@keyframes mini-rhombus-child-8 {
-  50% { transform: translate(-325%, 0); }
-}
-@keyframes mini-rhombus-big {
-  50% { transform: scale(.5); }
-}
-
-.stationRow {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.stationRow:last-child {
-  border-bottom: 0;
-}
-
-.stationState {
-  font-weight: 800;
-}
-
-.stationSub {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.officialSubmitBox {
-  margin-top: 16px;
-}
-
-.officialSubmitBox button {
-  width: 100%;
-}
-
-.officialDone {
-  margin-top: 16px;
-  text-align: center;
-  font-weight: 800;
-  font-size: 18px;
-}
-
-
-
-/* =====================================================
-   V4.8 小型 Cube 寫入動畫
-   用於最後返隊資料填寫中；取代原本菱形 Loading。
-   ===================================================== */
-.mini-cube-wrap {
-  width: 30px;
-  height: 30px;
-  perspective: 500px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
-
-@keyframes mini-cube-spin {
-  0% {
-    transform: rotate(45deg) rotateX(-25deg) rotateY(25deg);
-  }
-  50% {
-    transform: rotate(45deg) rotateX(-385deg) rotateY(25deg);
-  }
-  100% {
-    transform: rotate(45deg) rotateX(-385deg) rotateY(385deg);
-  }
-}
-
-.mini-cube {
-  animation: mini-cube-spin 2s infinite ease;
-  height: 22px;
-  width: 22px;
-  transform-style: preserve-3d;
-  position: relative;
-}
-
-.mini-cube div {
-  background-color: rgba(20,126,174,.10);
-  border: 1.5px solid var(--primary);
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-
-.mini-cube div:nth-of-type(1) {
-  transform: translateZ(-11px) rotateY(180deg);
-}
-.mini-cube div:nth-of-type(2) {
-  transform: rotateY(-270deg) translateX(50%);
-  transform-origin: top right;
-}
-.mini-cube div:nth-of-type(3) {
-  transform: rotateY(270deg) translateX(-50%);
-  transform-origin: center left;
-}
-.mini-cube div:nth-of-type(4) {
-  transform: rotateX(90deg) translateY(-50%);
-  transform-origin: top center;
-}
-.mini-cube div:nth-of-type(5) {
-  transform: rotateX(-90deg) translateY(50%);
-  transform-origin: bottom center;
-}
-.mini-cube div:nth-of-type(6) {
-  transform: translateZ(11px);
-}
-
-.doneActions {
-  margin-top: 18px;
-  display: grid;
-  gap: 10px;
-}
-
-.doneActions button {
-  width: 100%;
+  .dutyCatMiniCard.intro-pop, .dutyCatMiniSpark { animation-duration: 1ms !important; }
 }
 
 </style>
@@ -981,187 +672,141 @@ button.secondary::before {
 <style>
 
 /* =====================================================
-   V5.2.1 UI Rev2：首頁公務用車快速登打 × 值班喵
-   第一頁用左右版面，避免值班喵漂在按鈕上方。
+   V5.2.1 UI Rev3：首頁公務用車 × 自由值班喵
    ===================================================== */
 .ppe-only-launcher-with-cat {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
-  gap: 18px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: center;
 }
-
 .ppe-only-launcher-main {
   min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-
 .ppe-only-launcher-main h3 {
-  font-size: 20px;
-  margin-bottom: 14px;
+  margin: 0 0 14px;
+  font-size: 24px;
+  line-height: 1.15;
+  white-space: nowrap;
 }
-
 .ppe-only-launcher-with-cat button.ppe-only-open {
-  min-height: 76px;
+  min-height: 78px;
   font-size: 21px;
 }
 
 .homeDutyCatCard {
-  min-height: 126px;
-  box-sizing: border-box;
-  border: 2px solid #8ea4b6;
-  border-radius: 22px;
-  background: rgba(255,255,255,.88);
-  box-shadow: 0 8px 22px rgba(31,44,56,.12);
-  padding: 8px 12px;
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  overflow: hidden;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 4px 2px;
+  overflow: visible;
 }
-
 .homeDutyCatImage {
-  width: 112px;
-  height: 98px;
+  width: 246px;
+  height: 146px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 4px rgba(0,0,0,.10));
+  margin-bottom: -16px;
+  filter: drop-shadow(0 8px 8px rgba(0,0,0,.13));
 }
-
 .homeDutyCatInfo {
-  min-width: 0;
+  min-width: 222px;
+  min-height: 42px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 4px solid #8ea4b6;
+  border-radius: 999px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 5px 15px rgba(24,33,43,.11);
 }
-
-.homeDutyCatCaption {
-  color: #7c8993;
-  font-size: 11px;
-  font-weight: 800;
-  margin-bottom: 5px;
-}
-
+.homeDutyCatCaption { display: none !important; }
 .homeDutyCatRarity {
-  display: inline-block;
   min-width: 34px;
-  padding: 4px 7px;
+  padding: 3px 7px;
   border-radius: 999px;
   text-align: center;
   font-size: 12px;
   font-weight: 950;
   background: #e9f0f4;
   color: #526b7e;
-  margin-right: 4px;
 }
-
 .homeDutyCatName {
   color: #17202a;
   font-size: 17px;
+  line-height: 1;
   font-weight: 950;
   white-space: nowrap;
 }
-
 .homeDutyCatRate {
-  margin-top: 6px;
+  margin: 0;
   color: #7f8c96;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 850;
+  white-space: nowrap;
 }
-
-/* 首頁值班喵也套同一套稀有度框 */
-.homeDutyCatCard.rarity-r {
-  border-color: #8ea4b6;
-}
-.homeDutyCatCard.rarity-s {
+.homeDutyCatCard.rarity-r .homeDutyCatInfo { border-color: #8ea4b6; }
+.homeDutyCatCard.rarity-s .homeDutyCatInfo {
   border-color: #d7ac45;
-  box-shadow: 0 8px 22px rgba(215,172,69,.20);
+  box-shadow: 0 5px 16px rgba(215,172,69,.22);
 }
-.homeDutyCatCard.rarity-ss {
+.homeDutyCatCard.rarity-ss .homeDutyCatInfo {
   border-color: #9d72df;
-  box-shadow: 0 8px 23px rgba(130,80,210,.22);
+  box-shadow: 0 5px 17px rgba(130,80,210,.24);
 }
-.homeDutyCatCard.rarity-ssr {
-  border: 2px solid transparent;
+.homeDutyCatCard.rarity-ssr .homeDutyCatInfo {
+  border: 4px solid transparent;
   background:
-    linear-gradient(rgba(255,255,255,.90), rgba(255,255,255,.90)) padding-box,
+    linear-gradient(rgba(255,255,255,.97), rgba(255,255,255,.97)) padding-box,
     linear-gradient(120deg,#f1c453,#e99bcf,#8eabff,#7fd9c8,#f1c453) border-box;
-  box-shadow:
-    0 7px 20px rgba(235,173,80,.17),
-    0 0 16px rgba(151,125,235,.18);
+  box-shadow: 0 5px 16px rgba(235,173,80,.18), 0 0 16px rgba(151,125,235,.20);
 }
 
 @media (max-width: 620px) {
   .ppe-only-launcher-with-cat {
-    grid-template-columns: minmax(0, 1fr) 178px;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) 205px;
+    gap: 8px;
     padding: 12px;
   }
-
-  .ppe-only-launcher-main h3 {
-    font-size: 17px;
-    line-height: 1.25;
-    margin-bottom: 10px;
-  }
-
+  .ppe-only-launcher-main h3 { font-size: 19px; margin-bottom: 10px; }
   .ppe-only-launcher-with-cat button.ppe-only-open {
-    min-height: 66px;
+    min-height: 70px;
     padding: 10px 8px;
     font-size: 17px;
   }
-
-  .homeDutyCatCard {
-    min-height: 112px;
-    padding: 6px 7px;
-    border-radius: 18px;
-    grid-template-columns: 78px minmax(0, 1fr);
-    gap: 4px;
+  .homeDutyCatCard { min-height: 142px; padding: 0; }
+  .homeDutyCatImage { width: 174px; height: 116px; margin-bottom: -13px; }
+  .homeDutyCatInfo {
+    min-width: 180px;
+    min-height: 36px;
+    gap: 5px;
+    padding: 5px 8px;
+    border-width: 3px;
   }
-
-  .homeDutyCatImage {
-    width: 78px;
-    height: 82px;
-  }
-
-  .homeDutyCatCaption {
-    font-size: 9px;
-    margin-bottom: 4px;
-  }
-
-  .homeDutyCatRarity {
-    min-width: 26px;
-    padding: 3px 4px;
-    font-size: 9px;
-    margin-right: 1px;
-  }
-
-  .homeDutyCatName {
-    display: block;
-    margin-top: 4px;
-    font-size: 12px;
-    white-space: normal;
-    line-height: 1.15;
-  }
-
-  .homeDutyCatRate {
-    margin-top: 4px;
-    font-size: 9px;
-  }
+  .homeDutyCatCard.rarity-ssr .homeDutyCatInfo { border-width: 3px; }
+  .homeDutyCatRarity { min-width: 28px; padding: 3px 5px; font-size: 10px; }
+  .homeDutyCatName { font-size: 13px; }
+  .homeDutyCatRate { font-size: 10px; }
 }
-
 @media (max-width: 390px) {
   .ppe-only-launcher-with-cat {
-    grid-template-columns: minmax(0, 1fr) 154px;
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) 178px;
+    gap: 6px;
   }
-
-  .homeDutyCatCard {
-    grid-template-columns: 65px minmax(0, 1fr);
-  }
-
-  .homeDutyCatImage {
-    width: 65px;
-    height: 72px;
-  }
+  .ppe-only-launcher-main h3 { font-size: 18px; }
+  .homeDutyCatImage { width: 154px; height: 108px; }
+  .homeDutyCatInfo { min-width: 166px; }
 }
 
 /* V5.0 PPE Only：刻意與上方救護案件按鈕使用不同視覺，降低誤觸。 */
@@ -1788,7 +1433,6 @@ input[type="datetime-local"] { font-size: 14px; }
       </div>
 
       <div class="dutyCatMiniInfo">
-        <div class="dutyCatMiniCaption">本次值班喵</div>
         <div class="dutyCatMiniLine">
           <span class="dutyCatMiniRarity" id="dutyCatMiniRarity">R</span>
           <span class="dutyCatMiniName" id="dutyCatMiniName">胖貓</span>
@@ -1978,17 +1622,13 @@ function dutyCatHomeCardHtml() {
         alt="${esc(cat.name || "值班喵")}">
 
       <div class="homeDutyCatInfo">
-        <div class="homeDutyCatCaption">本次值班喵</div>
-        <div>
-          <span class="homeDutyCatRarity">${esc(rarity)}</span>
-          <span class="homeDutyCatName">${esc(cat.name || "胖貓")}</span>
-        </div>
-        <div class="homeDutyCatRate">出現機率 ${Number(cat.rate || 0)}%</div>
+        <span class="homeDutyCatRarity">${esc(rarity)}</span>
+        <span class="homeDutyCatName">${esc(cat.name || "胖貓")}</span>
+        <span class="homeDutyCatRate">${Number(cat.rate || 0)}%</span>
       </div>
     </div>
   `;
 }
-
 
 function syncDutyCatCompanion(playIntro) {
 
@@ -2410,7 +2050,7 @@ initRandomLoadingCat();
 
 <script>
 const FRONTEND_BUILD = "V5.2.1";
-const FRONTEND_UI_REV = "DutyCatCompanionV2.1-LargeCard-20260929";
+const FRONTEND_UI_REV = "DutyCatCompanionV2.2-FreeCat-20260929";
 
 const S = {
   step: 1,
@@ -3314,7 +2954,7 @@ function ppeOnlyHtml() {
     return `
       <div class="ppe-only-launcher ppe-only-launcher-with-cat">
         <div class="ppe-only-launcher-main">
-          <h3>🚙 公務用車快速登打</h3>
+          <h3>🚙 公務用車</h3>
 
           <button
             class="ppe-only-open"
@@ -3347,7 +2987,7 @@ function ppeOnlyHtml() {
     <div class="ppe-only-launcher">
       <div class="ppe-only-launcher-with-cat" style="margin:-2px -2px 12px;padding:0;border:0;background:transparent">
         <div class="ppe-only-launcher-main">
-          <h3>🚙 公務用車快速登打</h3>
+          <h3>🚙 公務用車</h3>
 
           <button
             class="secondary"
@@ -5496,7 +5136,7 @@ if ("serviceWorker" in navigator) {
           await navigator
             .serviceWorker
             .register(
-              "./sw.js?v=521-catui21",
+              "./sw.js?v=521-freecat3",
               {
                 updateViaCache:
                   "none"
