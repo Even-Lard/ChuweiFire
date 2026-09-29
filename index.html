@@ -38,7 +38,7 @@
       max-width: 680px;
       margin: 0 auto;
       /* V5.2.1 UI：預留值班喵小卡 + 固定導覽列空間，避免蓋住里程/輸入欄位 */
-      padding: 14px 14px 174px;
+      padding: 14px 14px 214px;
     }
     .head {
       padding: 16px 2px 10px;
@@ -244,7 +244,7 @@
 .fatcatLoading {
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 22px;
   padding: 18px;
   box-shadow: var(--shadow);
 }
@@ -501,7 +501,7 @@ button.secondary::before {
   transform: translateX(-50%);
   bottom: calc(100% + 7px);
   width: min(680px, calc(100% - 28px));
-  height: 66px;
+  height: 96px;
   pointer-events: none;
   z-index: 20;
   visibility: hidden;
@@ -515,13 +515,13 @@ button.secondary::before {
   position: absolute;
   right: 2px;
   bottom: 0;
-  width: 174px;
-  height: 58px;
+  width: 286px;
+  height: 88px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 10px 5px 5px;
+  gap: 12px;
+  padding: 7px 14px 7px 8px;
   border: 2px solid #9aaab8;
   border-radius: 18px;
   background: rgba(255,255,255,.96);
@@ -534,9 +534,9 @@ button.secondary::before {
 }
 
 .dutyCatMiniImageWrap {
-  flex: 0 0 54px;
-  width: 54px;
-  height: 48px;
+  flex: 0 0 92px;
+  width: 92px;
+  height: 74px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -544,8 +544,8 @@ button.secondary::before {
 
 .dutyCatMiniImage {
   display: block;
-  width: 54px;
-  height: 48px;
+  width: 92px;
+  height: 74px;
   object-fit: contain;
   filter: drop-shadow(0 3px 3px rgba(0,0,0,.10));
 }
@@ -557,9 +557,9 @@ button.secondary::before {
 
 .dutyCatMiniCaption {
   color: #82909c;
-  font-size: 10px;
-  font-weight: 750;
-  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 6px;
   white-space: nowrap;
 }
 
@@ -572,11 +572,11 @@ button.secondary::before {
 
 .dutyCatMiniRarity {
   flex: 0 0 auto;
-  min-width: 27px;
-  padding: 3px 5px;
+  min-width: 36px;
+  padding: 4px 7px;
   border-radius: 999px;
   text-align: center;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 950;
   letter-spacing: .03em;
   background: #eef3f6;
@@ -585,11 +585,11 @@ button.secondary::before {
 
 .dutyCatMiniName {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
   color: #18212b;
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 900;
 }
 
@@ -654,8 +654,8 @@ button.secondary::before {
   position: absolute;
   right: 0;
   bottom: 5px;
-  width: 184px;
-  height: 74px;
+  width: 292px;
+  height: 104px;
   overflow: visible;
 }
 
@@ -705,46 +705,48 @@ button.secondary::before {
 
 @media (max-width: 520px) {
   .wrap {
-    padding-bottom: 158px;
+    padding-bottom: 190px;
   }
 
   .bottomCompanion {
-    height: 58px;
-    bottom: calc(100% + 5px);
+    height: 80px;
+    bottom: calc(100% + 6px);
   }
 
   .dutyCatMiniCard {
-    width: 148px;
-    height: 50px;
-    border-radius: 16px;
-    gap: 6px;
-    padding: 4px 8px 4px 4px;
+    width: min(238px, calc(100vw - 34px));
+    height: 72px;
+    border-radius: 19px;
+    gap: 9px;
+    padding: 5px 10px 5px 6px;
   }
 
   .dutyCatMiniImageWrap,
   .dutyCatMiniImage {
-    width: 43px;
-    height: 42px;
+    width: 70px;
+    height: 60px;
   }
 
   .dutyCatMiniCaption {
-    font-size: 9px;
-    margin-bottom: 2px;
+    font-size: 10px;
+    margin-bottom: 4px;
   }
 
   .dutyCatMiniRarity {
-    min-width: 24px;
-    padding: 2px 4px;
-    font-size: 9px;
+    min-width: 30px;
+    padding: 3px 5px;
+    font-size: 10px;
   }
 
   .dutyCatMiniName {
-    font-size: 12px;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: visible;
   }
 
   .dutyCatMiniFx {
-    width: 156px;
-    height: 62px;
+    width: 246px;
+    height: 86px;
   }
 }
 
@@ -977,6 +979,191 @@ button.secondary::before {
   <meta name="application-name" content="肥貓代打">
 
 <style>
+
+/* =====================================================
+   V5.2.1 UI Rev2：首頁公務用車快速登打 × 值班喵
+   第一頁用左右版面，避免值班喵漂在按鈕上方。
+   ===================================================== */
+.ppe-only-launcher-with-cat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.ppe-only-launcher-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ppe-only-launcher-main h3 {
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+
+.ppe-only-launcher-with-cat button.ppe-only-open {
+  min-height: 76px;
+  font-size: 21px;
+}
+
+.homeDutyCatCard {
+  min-height: 126px;
+  box-sizing: border-box;
+  border: 2px solid #8ea4b6;
+  border-radius: 22px;
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 8px 22px rgba(31,44,56,.12);
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.homeDutyCatImage {
+  width: 112px;
+  height: 98px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(0,0,0,.10));
+}
+
+.homeDutyCatInfo {
+  min-width: 0;
+}
+
+.homeDutyCatCaption {
+  color: #7c8993;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.homeDutyCatRarity {
+  display: inline-block;
+  min-width: 34px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 950;
+  background: #e9f0f4;
+  color: #526b7e;
+  margin-right: 4px;
+}
+
+.homeDutyCatName {
+  color: #17202a;
+  font-size: 17px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.homeDutyCatRate {
+  margin-top: 6px;
+  color: #7f8c96;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+/* 首頁值班喵也套同一套稀有度框 */
+.homeDutyCatCard.rarity-r {
+  border-color: #8ea4b6;
+}
+.homeDutyCatCard.rarity-s {
+  border-color: #d7ac45;
+  box-shadow: 0 8px 22px rgba(215,172,69,.20);
+}
+.homeDutyCatCard.rarity-ss {
+  border-color: #9d72df;
+  box-shadow: 0 8px 23px rgba(130,80,210,.22);
+}
+.homeDutyCatCard.rarity-ssr {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255,255,255,.90), rgba(255,255,255,.90)) padding-box,
+    linear-gradient(120deg,#f1c453,#e99bcf,#8eabff,#7fd9c8,#f1c453) border-box;
+  box-shadow:
+    0 7px 20px rgba(235,173,80,.17),
+    0 0 16px rgba(151,125,235,.18);
+}
+
+@media (max-width: 620px) {
+  .ppe-only-launcher-with-cat {
+    grid-template-columns: minmax(0, 1fr) 178px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .ppe-only-launcher-main h3 {
+    font-size: 17px;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+
+  .ppe-only-launcher-with-cat button.ppe-only-open {
+    min-height: 66px;
+    padding: 10px 8px;
+    font-size: 17px;
+  }
+
+  .homeDutyCatCard {
+    min-height: 112px;
+    padding: 6px 7px;
+    border-radius: 18px;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .homeDutyCatImage {
+    width: 78px;
+    height: 82px;
+  }
+
+  .homeDutyCatCaption {
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
+
+  .homeDutyCatRarity {
+    min-width: 26px;
+    padding: 3px 4px;
+    font-size: 9px;
+    margin-right: 1px;
+  }
+
+  .homeDutyCatName {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    white-space: normal;
+    line-height: 1.15;
+  }
+
+  .homeDutyCatRate {
+    margin-top: 4px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  .ppe-only-launcher-with-cat {
+    grid-template-columns: minmax(0, 1fr) 154px;
+    gap: 8px;
+  }
+
+  .homeDutyCatCard {
+    grid-template-columns: 65px minmax(0, 1fr);
+  }
+
+  .homeDutyCatImage {
+    width: 65px;
+    height: 72px;
+  }
+}
+
 /* V5.0 PPE Only：刻意與上方救護案件按鈕使用不同視覺，降低誤觸。 */
 .ppe-only-launcher {
   margin-top: 18px;
@@ -1768,6 +1955,41 @@ function applyDutyCatRarity(el, rarity) {
   );
 }
 
+
+function dutyCatHomeCardHtml() {
+
+  const cat =
+    window.currentDutyCat;
+
+  if (!cat) {
+    return "";
+  }
+
+  const rarity =
+    String(
+      cat.rarity || "R"
+    );
+
+  return `
+    <div class="homeDutyCatCard ${dutyCatRarityClass(rarity)}">
+      <img
+        class="homeDutyCatImage"
+        src="${cat.image}"
+        alt="${esc(cat.name || "值班喵")}">
+
+      <div class="homeDutyCatInfo">
+        <div class="homeDutyCatCaption">本次值班喵</div>
+        <div>
+          <span class="homeDutyCatRarity">${esc(rarity)}</span>
+          <span class="homeDutyCatName">${esc(cat.name || "胖貓")}</span>
+        </div>
+        <div class="homeDutyCatRate">出現機率 ${Number(cat.rate || 0)}%</div>
+      </div>
+    </div>
+  `;
+}
+
+
 function syncDutyCatCompanion(playIntro) {
 
   const cat =
@@ -1812,6 +2034,14 @@ function syncDutyCatCompanion(playIntro) {
     !rarity ||
     !name
   ) {
+    return;
+  }
+
+  /* 第一頁改放在公務用車面板右側；後續頁才顯示底部大型值班喵卡。 */
+  if (S.step === 1) {
+    host.classList.remove(
+      "is-visible"
+    );
     return;
   }
 
@@ -2180,7 +2410,7 @@ initRandomLoadingCat();
 
 <script>
 const FRONTEND_BUILD = "V5.2.1";
-const FRONTEND_UI_REV = "DutyCatCompanionV2-20260929";
+const FRONTEND_UI_REV = "DutyCatCompanionV2.1-LargeCard-20260929";
 
 const S = {
   step: 1,
@@ -3082,21 +3312,23 @@ function ppeOnlyHtml() {
 
   if (!S.ppeOnlyOpen) {
     return `
-      <div class="ppe-only-launcher">
-        <h3>🚙 公務用車快速登打</h3>
-        <div class="sub">
-          只登打 PPE 車輛里程，不寫勤務管理、不寫 EMS。
+      <div class="ppe-only-launcher ppe-only-launcher-with-cat">
+        <div class="ppe-only-launcher-main">
+          <h3>🚙 公務用車快速登打</h3>
+
+          <button
+            class="ppe-only-open"
+            ${ready ? "" : "disabled"}
+            onclick="openPPEOnly()">
+            ${
+              ready
+                ? "登打里程"
+                : "車輛資料載入中…"
+            }
+          </button>
         </div>
-        <button
-          class="ppe-only-open"
-          ${ready ? "" : "disabled"}
-          onclick="openPPEOnly()">
-          ${
-            ready
-              ? "只登打車輛里程"
-              : "車輛資料背景載入中…"
-          }
-        </button>
+
+        ${dutyCatHomeCardHtml()}
       </div>
     `;
   }
@@ -3113,17 +3345,20 @@ function ppeOnlyHtml() {
 
   return `
     <div class="ppe-only-launcher">
-      <h3>🚙 公務用車｜只登打 PPE</h3>
-      <div class="sub">
-        這一區完全獨立，不會登打勤務管理或 EMS。
-      </div>
+      <div class="ppe-only-launcher-with-cat" style="margin:-2px -2px 12px;padding:0;border:0;background:transparent">
+        <div class="ppe-only-launcher-main">
+          <h3>🚙 公務用車快速登打</h3>
 
-      <button
-        class="secondary"
-        style="width:100%;margin-bottom:10px"
-        onclick="openPPEOnly()">
-        收起公務用車登打
-      </button>
+          <button
+            class="secondary"
+            style="width:100%;min-height:56px"
+            onclick="openPPEOnly()">
+            收起公務用車登打
+          </button>
+        </div>
+
+        ${dutyCatHomeCardHtml()}
+      </div>
 
       <div class="ppe-only-panel">
         <label class="field">選擇車輛</label>
@@ -3658,6 +3893,9 @@ function render() {
   }
 
   document.getElementById("nav").outerHTML = `<div id="nav">${navHtml()}</div>`;
+
+  /* 切頁 / 返回時只同步位置與內容，不重播首次特效。 */
+  syncDutyCatCompanion(false);
 }
 
 
@@ -5258,7 +5496,7 @@ if ("serviceWorker" in navigator) {
           await navigator
             .serviceWorker
             .register(
-              "./sw.js?v=521-catui2",
+              "./sw.js?v=521-catui21",
               {
                 updateViaCache:
                   "none"
