@@ -1366,6 +1366,191 @@ input[type="datetime-local"] { font-size: 14px; }
 /* V5.0.6 PPE lazy-load */
 .ppe-group-status{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;opacity:.65}.ppe-group-status.error{color:#b45309;opacity:1}.ppe-only-vehicle-loading,.ppe-only-vehicle-error,.ppe-rescue-read-error{width:100%;box-sizing:border-box;padding:13px 14px;margin-bottom:9px;border:1px solid #d7dce1;border-radius:14px;background:#fff}.ppe-only-vehicle-loading{opacity:.72}.ppe-only-vehicle-error,.ppe-rescue-read-error{border-color:#e8c58b;background:#fffaf0}.ppe-only-vehicle-loading .top,.ppe-only-vehicle-error .top,.ppe-rescue-read-error .top{font-weight:800}.ppe-only-vehicle-loading .meta,.ppe-only-vehicle-error .meta,.ppe-rescue-read-error .meta{margin-top:4px;font-size:13px;opacity:.75}.ppe-car-retry{margin-top:10px;min-height:38px;padding:7px 12px;border:1px solid #d7aa61;border-radius:10px;background:#fff;font-weight:800;font-size:13px;cursor:pointer}.ppe-car-retry:disabled{opacity:.55;cursor:default}
 </style>
+
+<style>
+/* =====================================================
+   V5.2.1 寫入狀態修正：只調整最後寫入面板 + PPE 單獨里程寫入動畫
+   ===================================================== */
+.stationRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.stationRow:last-child { border-bottom: 0; }
+.stationRow > div:first-child {
+  min-width: 0;
+  text-align: left;
+}
+.stationRow > div:last-child {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: right;
+}
+.stationRow b {
+  display: block;
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.stationSub {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.stationState {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-weight: 800;
+}
+.stationRunning {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+.ppe-only-writing-indicator {
+  margin: 14px 0 2px;
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #7a2440;
+  font-weight: 800;
+}
+
+.flower-spinner, .flower-spinner * {
+      box-sizing: border-box;
+    }
+
+    .flower-spinner {
+      height: 70px;
+      width: 70px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 70px;
+    }
+
+    .flower-spinner .dots-container {
+      height: calc(70px / 7);
+      width: calc(70px / 7);
+    }
+
+    .flower-spinner .smaller-dot {
+      background: #ff1d5e;
+      height: 100%;
+      width: 100%;
+      border-radius: 50%;
+      animation: flower-spinner-smaller-dot-animation 2.5s 0s infinite both;
+    }
+
+    .flower-spinner .bigger-dot {
+      background: #ff1d5e;
+      height: 100%;
+      width: 100%;
+      padding: 10%;
+      border-radius: 50%;
+      animation: flower-spinner-bigger-dot-animation 2.5s 0s infinite both;
+    }
+
+    @keyframes flower-spinner-bigger-dot-animation {
+      0% {
+        box-shadow: rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px;
+      }
+      50% {
+        transform: rotate(180deg);
+      }
+      25%, 75% {
+        box-shadow: rgb(255, 29, 94) 26px 0px 0px,
+        rgb(255, 29, 94) -26px 0px 0px,
+        rgb(255, 29, 94) 0px 26px 0px,
+        rgb(255, 29, 94) 0px -26px 0px,
+        rgb(255, 29, 94) 19px -19px 0px,
+        rgb(255, 29, 94) 19px 19px 0px,
+        rgb(255, 29, 94) -19px -19px 0px,
+        rgb(255, 29, 94) -19px 19px 0px;
+      }
+      100% {
+        transform: rotate(360deg);
+        box-shadow: rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px;
+      }
+    }
+
+    @keyframes flower-spinner-smaller-dot-animation {
+      0% {
+        box-shadow: rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px;
+      }
+      25%, 75% {
+        box-shadow: rgb(255, 29, 94) 14px 0px 0px,
+        rgb(255, 29, 94) -14px 0px 0px,
+        rgb(255, 29, 94) 0px 14px 0px,
+        rgb(255, 29, 94) 0px -14px 0px,
+        rgb(255, 29, 94) 10px -10px 0px,
+        rgb(255, 29, 94) 10px 10px 0px,
+        rgb(255, 29, 94) -10px -10px 0px,
+        rgb(255, 29, 94) -10px 10px 0px;
+      }
+      100% {
+        box-shadow: rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px,
+        rgb(255, 29, 94) 0px 0px 0px;
+      }
+    }
+
+@media (max-width: 520px) {
+  .stationRow {
+    grid-template-columns: minmax(0, 1fr) 128px;
+    gap: 10px;
+    padding: 12px 2px;
+  }
+  .stationRow b { font-size: 15px; }
+  .stationSub { font-size: 12px; }
+  .stationRunning { gap: 7px; }
+  .stationRunning .flower-spinner {
+    transform: scale(.78);
+    margin: -8px;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -3178,6 +3363,15 @@ function ppeOnlyHtml() {
               : ""
           }
 
+          ${
+            S.ppeOnlyRunning
+              ? `<div class="ppe-only-writing-indicator">
+                  ${flowerSpinnerHtml()}
+                  <span>PPE 寫入中…</span>
+                </div>`
+              : ""
+          }
+
           <button
             id="ppeOnlySubmitButton"
             class="ppe-only-submit"
@@ -4311,14 +4505,27 @@ function rhombusSpinnerHtml() {
 }
 
 
+function flowerSpinnerHtml() {
+  return `
+    <div class="flower-spinner" aria-label="寫入中">
+      <div class="dots-container">
+        <div class="bigger-dot">
+          <div class="smaller-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
 function stationStatusHtml(
   status
 ) {
 
   if (status === "running") {
     return `
-      <div style="display:flex;align-items:center;gap:10px">
-        ${rhombusSpinnerHtml()}
+      <div class="stationRunning">
+        ${flowerSpinnerHtml()}
         <span class="stationState">寫入中</span>
       </div>
     `;
