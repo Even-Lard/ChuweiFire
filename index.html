@@ -2230,6 +2230,8 @@ function initRandomLoadingCat() {
   }
 }
 
+// 保留完整的首次開場模板，讓「再次填寫」真正重播抽喵喵動畫。
+const RETURN_LOADING_HTML = document.getElementById("app").innerHTML;
 initRandomLoadingCat();
 </script>
 
@@ -2274,6 +2276,7 @@ const S = {
   emsCaptchaToken: "",
   emsCaptchaImage: "",
   emsAuthSessionId: "",
+  emsAuthCreatedAt: 0, // 前端保守判斷時效；後端仍負責真正驗證
 
   officialRunning: false,
   officialDone: false,
@@ -3735,6 +3738,14 @@ function render() {
 
 
 function finalEmsReady() {
+  // EMS 登入 Cookie 後端最長保存 30 分鐘，前端提早 5 分鐘換新。
+  // 這只是顯示上的保守預判，真正有效性仍由後端驗證。
+  if (S.emsAuthSessionId &&
+      (!S.emsAuthCreatedAt || Date.now() - S.emsAuthCreatedAt >= 25 * 60 * 1000)) {
+    S.emsAuthSessionId = "";
+    S.emsAuthCreatedAt = 0;
+    if (S.bootstrap) S.bootstrap.emsSessionActive = false;
+  }
   return !!(
     S.bootstrap &&
     S.bootstrap.emsSessionActive &&
@@ -4079,6 +4090,7 @@ async function loginEmsInlineIfNeeded() {
 
   S.bootstrap.emsSessionActive =
     true;
+  S.emsAuthCreatedAt = Date.now();
 
   S.emsCaptchaToken =
     "";
@@ -4125,7 +4137,9 @@ async function submitReturnData() {
     let emsTokenForSubmit = "";
     let emsCodeForSubmit = "";
 
-    if (!completed.ems) {
+    // 已登入且尚在有效期內，沿用 EMS Session，不再要求驗證碼。
+    // 若沒有有效 Session，才必須使用新驗證碼登入。
+    if (!completed.ems && !finalEmsReady()) {
 
       if (
         !S.emsCaptchaToken ||
@@ -4260,6 +4274,7 @@ async function submitReturnData() {
     ) {
       S.emsAuthSessionId =
         emsResult.emsAuthSessionId;
+      if (!S.emsAuthCreatedAt) S.emsAuthCreatedAt = Date.now();
 
       if (S.bootstrap) {
         S.bootstrap.emsSessionActive =
@@ -4318,6 +4333,7 @@ async function submitReturnData() {
         S.emsCaptchaToken = "";
         S.emsCaptchaImage = "";
         S.emsAuthSessionId = "";
+        S.emsAuthCreatedAt = 0;
 
         renderFinalEmsBox();
 
@@ -4380,11 +4396,15 @@ async function submitReturnData() {
 
 function restartReturnWorkflow() {
 
-  // 回到乾淨初始狀態，重新向後端讀取案件/車輛/駕駛。
-  // 適合兩車接連返隊時連續幫不同同仁登打。
+  // 第二位同仁從真正的開場重新開始：重新抽喵、跑動畫、重讀案件。
+  // EMS 已登入 Session 可跨案件沿用，但不能沿用已消耗的驗證碼。
   S.step = 1;
+  S.bootstrap = null;
   S.candidate = null;
   S.sex = "";
+  S.maleCount = 0;
+  S.femaleCount = 0;
+  S.medicalType = "";
   S.result = "";
   S.destination = "";
   S.otherDestination = "";
@@ -4393,7 +4413,9 @@ function restartReturnWorkflow() {
   S.driverId = "";
   S.driverName = "";
   S.ppeDestination = "";
+  S.ppeDestinationAuto = true;
   S.tabletClosed = false;
+  S.drivers = [];
 
   S.stationTest = {
     duty: "pending",
@@ -4412,15 +4434,26 @@ function restartReturnWorkflow() {
   S.emsCaptchaToken = "";
   S.emsCaptchaImage = "";
 
-  document.getElementById("app").innerHTML =
-    `<div class="card loading">重新讀取返隊資料中...</div>`;
+  // 若 Session 已接近後端 30 分鐘時限，就讓下一位重新取得驗證碼。
+  if (!S.emsAuthCreatedAt || Date.now() - S.emsAuthCreatedAt >= 25 * 60 * 1000) {
+    S.emsAuthSessionId = "";
+    S.emsAuthCreatedAt = 0;
+  }
 
+  window.currentDutyCat = null;
+  window.dutyCatCompanionIntroPlayed = false;
+  const companion = document.getElementById("dutyCatCompanion");
+  if (companion) companion.classList.remove("is-visible");
+
+  document.getElementById("app").innerHTML = RETURN_LOADING_HTML;
   document.getElementById("nav").innerHTML =
-    `<button class="primary" disabled>資料準備中</button>`;
-
+    `<div class="bottomInner single"><button class="primary" disabled>資料準備中</button></div>`;
+  document.getElementById("syncText").textContent =
+    "正在讀取最新案件…車輛資料會在背景準備";
+  initRandomLoadingCat();
+  armBootstrapWatchdog();
   start();
 }
-
 
 function currentWorkflowData() {
   const car = getCar();
@@ -5283,8 +5316,13 @@ async function start() {
       S.emsCaptchaImage = "";
       S.emsAuthSessionId = "";
       isFirstPageBootstrap = false;
-    } else if (S.emsAuthSessionId) {
+    } else if (S.emsAuthSessionId && S.emsAuthCreatedAt &&
+               Date.now() - S.emsAuthCreatedAt < 25 * 60 * 1000) {
       S.bootstrap.emsSessionActive = true;
+    } else {
+      S.bootstrap.emsSessionActive = false;
+      S.emsAuthSessionId = "";
+      S.emsAuthCreatedAt = 0;
     }
 
     clearTimeout(
